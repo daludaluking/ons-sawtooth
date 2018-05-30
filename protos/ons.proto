@@ -1,0 +1,19 @@
+syntax = "proto3";
+option go_package = "ons_pb2";
+
+message GS1Code {
+    //unique gs1 code string
+    string gs1_code = 1;
+
+    //unique onwer public key
+    string owner_id = 2;
+}
+
+message SendONSTransactionData {
+    enum ONSTransactionType {
+        REGISTER_GS1CODE = 0;
+        DEREGISTER_GS1CODE = 1;
+    }
+    ONSTransactionType transaction_type = 1;
+    GS1Code gs1_code_data = 2;
+}
