@@ -1,19 +1,82 @@
 syntax = "proto3";
 option go_package = "ons_pb2";
 
-message GS1Code {
-    //unique gs1 code string
-    string gs1_code = 1;
+message Record {
+    //uint32 order;
+    //uint32 pref;
+    //flags will be rune type in golang.
+    int32 flags = 1;
+    string service = 2; //url.... is it needed??
+    string regexp = 3;
+    //string replacement;
+    //extended properties
+    enum RecordState {
+        RECORD_INACTIVE = 0;
+        RECORD_ACTIVE = 1;
+    }
+    RecordState state = 4; //0 : inactive, 1 : active
 
-    //unique onwer public key
-    string owner_id = 2;
+    //record를 등록한 address. (service 제공자) 
+    string provider = 5;
+    //TO-DO : service type과 차후에 추가한다.
+    //ServiceType serviceType;
+    //FlexibleServiceType flexibleServiceType;
 }
 
-message SendONSTransactionData {
+message GS1CodeData {
+    //unique gs1 code string
+    string gs1_code = 1;
+ 
+    //unique onwer public key
+    string owner_id = 2;
+
+    //records will be slice. 
+    repeated Record records = 3;
+
+    enum GS1CodeState {
+        GS1CODE_NONE = 0;
+        GS1CODE_INACTIVE = 1;
+        GS1CODE_ACTIVE = 2;
+    }
+    //0: not belong to anyone, 1 : inactive state, 2: active state
+    GS1CodeState state = 4;
+}
+
+message SendONSTransactionPayload {
+    message RegisterGS1CodeTransactionData {
+        string gs1_code = 1;
+    }
+
+    message DeregisterGS1CodeTransactionData {
+        string gs1_code = 1;
+    }
+
+    message RecordTranactionData {
+        int32 flags = 1;
+        string service = 2;
+        string regexp = 3;
+    }
+
+    message AddRecordTransactionData {
+        string gs1_code = 1;
+        RecordTranactionData record  =2;
+    }
+
+    message RemoveRecordTransactionData {
+        string gs1_code = 1;
+        uint32 index = 2;
+    }
+
     enum ONSTransactionType {
         REGISTER_GS1CODE = 0;
         DEREGISTER_GS1CODE = 1;
+        ADD_RECORD = 2;
+        REMOVE_RECORD = 3;
     }
+
     ONSTransactionType transaction_type = 1;
-    GS1Code gs1_code_data = 2;
+    RegisterGS1CodeTransactionData register_gs1_code = 2;
+    DeregisterGS1CodeTransactionData deregister_gs1_code = 3;
+    AddRecordTransactionData add_record = 4;
+    RemoveRecordTransactionData remove_record = 5;
 }

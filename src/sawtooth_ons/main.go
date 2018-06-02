@@ -4,8 +4,9 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"os"
 	"sawtooth_sdk/logging"
-	//"sawtooth_sdk/processor"
-	//"syscall"
+	"sawtooth_sdk/processor"
+	ons "sawtooth_ons/handler"
+	"syscall"
 	"fmt"
 )
 
@@ -45,9 +46,23 @@ func main() {
 	logger.Debugf("endpoint = %v\n", opts.Connect)
 
 	//for debugging ... ...
-	/*
+
 	fmt.Printf("command line arguments: %v\n", os.Args)
 	fmt.Printf("verbose = %v\n", len(opts.Verbose))
 	fmt.Printf("endpoint = %v\n", opts.Connect)
-	*/
+
+	handler := &ons.ONSHandler{}
+	processor := processor.NewTransactionProcessor(opts.Connect)
+/*
+	processor.SetMaxQueueSize(opts.Queue)
+	if opts.Threads > 0 {
+		processor.SetThreadCount(opts.Threads)
+	}
+*/
+	processor.AddHandler(handler)
+	processor.ShutdownOnSignal(syscall.SIGINT, syscall.SIGTERM)
+	err = processor.Start()
+	if err != nil {
+		logger.Error("Processor stopped: ", err)
+	}
 }

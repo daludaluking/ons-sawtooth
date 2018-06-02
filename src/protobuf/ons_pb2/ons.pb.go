@@ -18,145 +18,591 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-type SendONSTransactionData_ONSTransactionType int32
+// string replacement;
+// extended properties
+type Record_RecordState int32
 
 const (
-	SendONSTransactionData_REGISTER_GS1CODE   SendONSTransactionData_ONSTransactionType = 0
-	SendONSTransactionData_DEREGISTER_GS1CODE SendONSTransactionData_ONSTransactionType = 1
+	Record_RECORD_INACTIVE Record_RecordState = 0
+	Record_RECORD_ACTIVE   Record_RecordState = 1
 )
 
-var SendONSTransactionData_ONSTransactionType_name = map[int32]string{
+var Record_RecordState_name = map[int32]string{
+	0: "RECORD_INACTIVE",
+	1: "RECORD_ACTIVE",
+}
+var Record_RecordState_value = map[string]int32{
+	"RECORD_INACTIVE": 0,
+	"RECORD_ACTIVE":   1,
+}
+
+func (x Record_RecordState) String() string {
+	return proto.EnumName(Record_RecordState_name, int32(x))
+}
+func (Record_RecordState) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{0, 0}
+}
+
+type GS1CodeData_GS1CodeState int32
+
+const (
+	GS1CodeData_GS1CODE_NONE     GS1CodeData_GS1CodeState = 0
+	GS1CodeData_GS1CODE_INACTIVE GS1CodeData_GS1CodeState = 1
+	GS1CodeData_GS1CODE_ACTIVE   GS1CodeData_GS1CodeState = 2
+)
+
+var GS1CodeData_GS1CodeState_name = map[int32]string{
+	0: "GS1CODE_NONE",
+	1: "GS1CODE_INACTIVE",
+	2: "GS1CODE_ACTIVE",
+}
+var GS1CodeData_GS1CodeState_value = map[string]int32{
+	"GS1CODE_NONE":     0,
+	"GS1CODE_INACTIVE": 1,
+	"GS1CODE_ACTIVE":   2,
+}
+
+func (x GS1CodeData_GS1CodeState) String() string {
+	return proto.EnumName(GS1CodeData_GS1CodeState_name, int32(x))
+}
+func (GS1CodeData_GS1CodeState) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{1, 0}
+}
+
+type SendONSTransactionPayload_ONSTransactionType int32
+
+const (
+	SendONSTransactionPayload_REGISTER_GS1CODE   SendONSTransactionPayload_ONSTransactionType = 0
+	SendONSTransactionPayload_DEREGISTER_GS1CODE SendONSTransactionPayload_ONSTransactionType = 1
+	SendONSTransactionPayload_ADD_RECORD         SendONSTransactionPayload_ONSTransactionType = 2
+	SendONSTransactionPayload_REMOVE_RECORD      SendONSTransactionPayload_ONSTransactionType = 3
+)
+
+var SendONSTransactionPayload_ONSTransactionType_name = map[int32]string{
 	0: "REGISTER_GS1CODE",
 	1: "DEREGISTER_GS1CODE",
+	2: "ADD_RECORD",
+	3: "REMOVE_RECORD",
 }
-var SendONSTransactionData_ONSTransactionType_value = map[string]int32{
+var SendONSTransactionPayload_ONSTransactionType_value = map[string]int32{
 	"REGISTER_GS1CODE":   0,
 	"DEREGISTER_GS1CODE": 1,
+	"ADD_RECORD":         2,
+	"REMOVE_RECORD":      3,
 }
 
-func (x SendONSTransactionData_ONSTransactionType) String() string {
-	return proto.EnumName(SendONSTransactionData_ONSTransactionType_name, int32(x))
+func (x SendONSTransactionPayload_ONSTransactionType) String() string {
+	return proto.EnumName(SendONSTransactionPayload_ONSTransactionType_name, int32(x))
 }
-func (SendONSTransactionData_ONSTransactionType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_ons_92b7e121672384cb, []int{1, 0}
+func (SendONSTransactionPayload_ONSTransactionType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 0}
 }
 
-type GS1Code struct {
-	// unique gs1 code string
-	Gs1Code string `protobuf:"bytes,1,opt,name=gs1_code,json=gs1Code" json:"gs1_code,omitempty"`
-	// unique onwer public key
-	OwnerId              string   `protobuf:"bytes,2,opt,name=owner_id,json=ownerId" json:"owner_id,omitempty"`
+type Record struct {
+	// uint32 order;
+	// uint32 pref;
+	// flags will be rune type in golang.
+	Flags   int32              `protobuf:"varint,1,opt,name=flags" json:"flags,omitempty"`
+	Service string             `protobuf:"bytes,2,opt,name=service" json:"service,omitempty"`
+	Regexp  string             `protobuf:"bytes,3,opt,name=regexp" json:"regexp,omitempty"`
+	State   Record_RecordState `protobuf:"varint,4,opt,name=state,enum=Record_RecordState" json:"state,omitempty"`
+	// record를 등록한 address. (service 제공자)
+	Provider             string   `protobuf:"bytes,5,opt,name=provider" json:"provider,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GS1Code) Reset()         { *m = GS1Code{} }
-func (m *GS1Code) String() string { return proto.CompactTextString(m) }
-func (*GS1Code) ProtoMessage()    {}
-func (*GS1Code) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_92b7e121672384cb, []int{0}
+func (m *Record) Reset()         { *m = Record{} }
+func (m *Record) String() string { return proto.CompactTextString(m) }
+func (*Record) ProtoMessage()    {}
+func (*Record) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{0}
 }
-func (m *GS1Code) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GS1Code.Unmarshal(m, b)
+func (m *Record) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Record.Unmarshal(m, b)
 }
-func (m *GS1Code) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GS1Code.Marshal(b, m, deterministic)
+func (m *Record) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Record.Marshal(b, m, deterministic)
 }
-func (dst *GS1Code) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GS1Code.Merge(dst, src)
+func (dst *Record) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Record.Merge(dst, src)
 }
-func (m *GS1Code) XXX_Size() int {
-	return xxx_messageInfo_GS1Code.Size(m)
+func (m *Record) XXX_Size() int {
+	return xxx_messageInfo_Record.Size(m)
 }
-func (m *GS1Code) XXX_DiscardUnknown() {
-	xxx_messageInfo_GS1Code.DiscardUnknown(m)
+func (m *Record) XXX_DiscardUnknown() {
+	xxx_messageInfo_Record.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GS1Code proto.InternalMessageInfo
+var xxx_messageInfo_Record proto.InternalMessageInfo
 
-func (m *GS1Code) GetGs1Code() string {
+func (m *Record) GetFlags() int32 {
+	if m != nil {
+		return m.Flags
+	}
+	return 0
+}
+
+func (m *Record) GetService() string {
+	if m != nil {
+		return m.Service
+	}
+	return ""
+}
+
+func (m *Record) GetRegexp() string {
+	if m != nil {
+		return m.Regexp
+	}
+	return ""
+}
+
+func (m *Record) GetState() Record_RecordState {
+	if m != nil {
+		return m.State
+	}
+	return Record_RECORD_INACTIVE
+}
+
+func (m *Record) GetProvider() string {
+	if m != nil {
+		return m.Provider
+	}
+	return ""
+}
+
+type GS1CodeData struct {
+	// unique gs1 code string
+	Gs1Code string `protobuf:"bytes,1,opt,name=gs1_code,json=gs1Code" json:"gs1_code,omitempty"`
+	// unique onwer public key
+	OwnerId string `protobuf:"bytes,2,opt,name=owner_id,json=ownerId" json:"owner_id,omitempty"`
+	// records will be slice.
+	Records []*Record `protobuf:"bytes,3,rep,name=records" json:"records,omitempty"`
+	// 0: not belong to anyone, 1 : inactive state, 2: active state
+	State                GS1CodeData_GS1CodeState `protobuf:"varint,4,opt,name=state,enum=GS1CodeData_GS1CodeState" json:"state,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
+	XXX_unrecognized     []byte                   `json:"-"`
+	XXX_sizecache        int32                    `json:"-"`
+}
+
+func (m *GS1CodeData) Reset()         { *m = GS1CodeData{} }
+func (m *GS1CodeData) String() string { return proto.CompactTextString(m) }
+func (*GS1CodeData) ProtoMessage()    {}
+func (*GS1CodeData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{1}
+}
+func (m *GS1CodeData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GS1CodeData.Unmarshal(m, b)
+}
+func (m *GS1CodeData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GS1CodeData.Marshal(b, m, deterministic)
+}
+func (dst *GS1CodeData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GS1CodeData.Merge(dst, src)
+}
+func (m *GS1CodeData) XXX_Size() int {
+	return xxx_messageInfo_GS1CodeData.Size(m)
+}
+func (m *GS1CodeData) XXX_DiscardUnknown() {
+	xxx_messageInfo_GS1CodeData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GS1CodeData proto.InternalMessageInfo
+
+func (m *GS1CodeData) GetGs1Code() string {
 	if m != nil {
 		return m.Gs1Code
 	}
 	return ""
 }
 
-func (m *GS1Code) GetOwnerId() string {
+func (m *GS1CodeData) GetOwnerId() string {
 	if m != nil {
 		return m.OwnerId
 	}
 	return ""
 }
 
-type SendONSTransactionData struct {
-	TransactionType      SendONSTransactionData_ONSTransactionType `protobuf:"varint,1,opt,name=transaction_type,json=transactionType,enum=SendONSTransactionData_ONSTransactionType" json:"transaction_type,omitempty"`
-	Gs1CodeData          *GS1Code                                  `protobuf:"bytes,2,opt,name=gs1_code_data,json=gs1CodeData" json:"gs1_code_data,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
-	XXX_unrecognized     []byte                                    `json:"-"`
-	XXX_sizecache        int32                                     `json:"-"`
-}
-
-func (m *SendONSTransactionData) Reset()         { *m = SendONSTransactionData{} }
-func (m *SendONSTransactionData) String() string { return proto.CompactTextString(m) }
-func (*SendONSTransactionData) ProtoMessage()    {}
-func (*SendONSTransactionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_92b7e121672384cb, []int{1}
-}
-func (m *SendONSTransactionData) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SendONSTransactionData.Unmarshal(m, b)
-}
-func (m *SendONSTransactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SendONSTransactionData.Marshal(b, m, deterministic)
-}
-func (dst *SendONSTransactionData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SendONSTransactionData.Merge(dst, src)
-}
-func (m *SendONSTransactionData) XXX_Size() int {
-	return xxx_messageInfo_SendONSTransactionData.Size(m)
-}
-func (m *SendONSTransactionData) XXX_DiscardUnknown() {
-	xxx_messageInfo_SendONSTransactionData.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SendONSTransactionData proto.InternalMessageInfo
-
-func (m *SendONSTransactionData) GetTransactionType() SendONSTransactionData_ONSTransactionType {
+func (m *GS1CodeData) GetRecords() []*Record {
 	if m != nil {
-		return m.TransactionType
-	}
-	return SendONSTransactionData_REGISTER_GS1CODE
-}
-
-func (m *SendONSTransactionData) GetGs1CodeData() *GS1Code {
-	if m != nil {
-		return m.Gs1CodeData
+		return m.Records
 	}
 	return nil
 }
 
-func init() {
-	proto.RegisterType((*GS1Code)(nil), "GS1Code")
-	proto.RegisterType((*SendONSTransactionData)(nil), "SendONSTransactionData")
-	proto.RegisterEnum("SendONSTransactionData_ONSTransactionType", SendONSTransactionData_ONSTransactionType_name, SendONSTransactionData_ONSTransactionType_value)
+func (m *GS1CodeData) GetState() GS1CodeData_GS1CodeState {
+	if m != nil {
+		return m.State
+	}
+	return GS1CodeData_GS1CODE_NONE
 }
 
-func init() { proto.RegisterFile("ons.proto", fileDescriptor_ons_92b7e121672384cb) }
+type SendONSTransactionPayload struct {
+	TransactionType      SendONSTransactionPayload_ONSTransactionType                `protobuf:"varint,1,opt,name=transaction_type,json=transactionType,enum=SendONSTransactionPayload_ONSTransactionType" json:"transaction_type,omitempty"`
+	RegisterGs1Code      *SendONSTransactionPayload_RegisterGS1CodeTransactionData   `protobuf:"bytes,2,opt,name=register_gs1_code,json=registerGs1Code" json:"register_gs1_code,omitempty"`
+	DeregisterGs1Code    *SendONSTransactionPayload_DeregisterGS1CodeTransactionData `protobuf:"bytes,3,opt,name=deregister_gs1_code,json=deregisterGs1Code" json:"deregister_gs1_code,omitempty"`
+	AddRecord            *SendONSTransactionPayload_AddRecordTransactionData         `protobuf:"bytes,4,opt,name=add_record,json=addRecord" json:"add_record,omitempty"`
+	RemoveRecord         *SendONSTransactionPayload_RemoveRecordTransactionData      `protobuf:"bytes,5,opt,name=remove_record,json=removeRecord" json:"remove_record,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                                    `json:"-"`
+	XXX_unrecognized     []byte                                                      `json:"-"`
+	XXX_sizecache        int32                                                       `json:"-"`
+}
 
-var fileDescriptor_ons_92b7e121672384cb = []byte{
-	// 222 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xcc, 0xcf, 0x2b, 0xd6,
-	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x57, 0xb2, 0xe7, 0x62, 0x77, 0x0f, 0x36, 0x74, 0xce, 0x4f, 0x49,
-	0x15, 0x92, 0xe4, 0xe2, 0x48, 0x2f, 0x36, 0x8c, 0x4f, 0xce, 0x4f, 0x49, 0x95, 0x60, 0x54, 0x60,
-	0xd4, 0xe0, 0x0c, 0x62, 0x4f, 0x2f, 0x86, 0x4b, 0xe5, 0x97, 0xe7, 0xa5, 0x16, 0xc5, 0x67, 0xa6,
-	0x48, 0x30, 0x41, 0xa4, 0xc0, 0x7c, 0xcf, 0x14, 0xa5, 0x87, 0x8c, 0x5c, 0x62, 0xc1, 0xa9, 0x79,
-	0x29, 0xfe, 0x7e, 0xc1, 0x21, 0x45, 0x89, 0x79, 0xc5, 0x89, 0xc9, 0x25, 0x99, 0xf9, 0x79, 0x2e,
-	0x89, 0x25, 0x89, 0x42, 0xa1, 0x5c, 0x02, 0x25, 0x08, 0xa1, 0xf8, 0x92, 0xca, 0x02, 0x88, 0xc1,
-	0x7c, 0x46, 0x5a, 0x7a, 0xd8, 0xb5, 0xe8, 0xa1, 0x0a, 0x85, 0x54, 0x16, 0xa4, 0x06, 0xf1, 0x97,
-	0xa0, 0x0a, 0x08, 0xe9, 0x70, 0xf1, 0xc2, 0xdc, 0x19, 0x9f, 0x92, 0x58, 0x92, 0x08, 0x76, 0x11,
-	0xb7, 0x11, 0x87, 0x1e, 0xd4, 0x23, 0x41, 0xdc, 0x50, 0x67, 0x83, 0x4c, 0x54, 0x72, 0xe2, 0x12,
-	0xc2, 0x34, 0x54, 0x48, 0x84, 0x4b, 0x20, 0xc8, 0xd5, 0xdd, 0x33, 0x38, 0xc4, 0x35, 0x28, 0x1e,
-	0xa4, 0xcd, 0xdf, 0xc5, 0x55, 0x80, 0x41, 0x48, 0x8c, 0x4b, 0xc8, 0xc5, 0x15, 0x43, 0x9c, 0xd1,
-	0x89, 0x33, 0x8a, 0x3d, 0x3f, 0xaf, 0x38, 0xbe, 0x20, 0xc9, 0x28, 0x89, 0x0d, 0x1c, 0x6c, 0xc6,
-	0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xd8, 0x36, 0xcb, 0x33, 0x43, 0x01, 0x00, 0x00,
+func (m *SendONSTransactionPayload) Reset()         { *m = SendONSTransactionPayload{} }
+func (m *SendONSTransactionPayload) String() string { return proto.CompactTextString(m) }
+func (*SendONSTransactionPayload) ProtoMessage()    {}
+func (*SendONSTransactionPayload) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{2}
+}
+func (m *SendONSTransactionPayload) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload.Size(m)
+}
+func (m *SendONSTransactionPayload) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload) GetTransactionType() SendONSTransactionPayload_ONSTransactionType {
+	if m != nil {
+		return m.TransactionType
+	}
+	return SendONSTransactionPayload_REGISTER_GS1CODE
+}
+
+func (m *SendONSTransactionPayload) GetRegisterGs1Code() *SendONSTransactionPayload_RegisterGS1CodeTransactionData {
+	if m != nil {
+		return m.RegisterGs1Code
+	}
+	return nil
+}
+
+func (m *SendONSTransactionPayload) GetDeregisterGs1Code() *SendONSTransactionPayload_DeregisterGS1CodeTransactionData {
+	if m != nil {
+		return m.DeregisterGs1Code
+	}
+	return nil
+}
+
+func (m *SendONSTransactionPayload) GetAddRecord() *SendONSTransactionPayload_AddRecordTransactionData {
+	if m != nil {
+		return m.AddRecord
+	}
+	return nil
+}
+
+func (m *SendONSTransactionPayload) GetRemoveRecord() *SendONSTransactionPayload_RemoveRecordTransactionData {
+	if m != nil {
+		return m.RemoveRecord
+	}
+	return nil
+}
+
+type SendONSTransactionPayload_RegisterGS1CodeTransactionData struct {
+	Gs1Code              string   `protobuf:"bytes,1,opt,name=gs1_code,json=gs1Code" json:"gs1_code,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) Reset() {
+	*m = SendONSTransactionPayload_RegisterGS1CodeTransactionData{}
+}
+func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SendONSTransactionPayload_RegisterGS1CodeTransactionData) ProtoMessage() {}
+func (*SendONSTransactionPayload_RegisterGS1CodeTransactionData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 0}
+}
+func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload_RegisterGS1CodeTransactionData.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload_RegisterGS1CodeTransactionData.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload_RegisterGS1CodeTransactionData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload_RegisterGS1CodeTransactionData.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload_RegisterGS1CodeTransactionData.Size(m)
+}
+func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload_RegisterGS1CodeTransactionData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload_RegisterGS1CodeTransactionData proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) GetGs1Code() string {
+	if m != nil {
+		return m.Gs1Code
+	}
+	return ""
+}
+
+type SendONSTransactionPayload_DeregisterGS1CodeTransactionData struct {
+	Gs1Code              string   `protobuf:"bytes,1,opt,name=gs1_code,json=gs1Code" json:"gs1_code,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) Reset() {
+	*m = SendONSTransactionPayload_DeregisterGS1CodeTransactionData{}
+}
+func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SendONSTransactionPayload_DeregisterGS1CodeTransactionData) ProtoMessage() {}
+func (*SendONSTransactionPayload_DeregisterGS1CodeTransactionData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 1}
+}
+func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload_DeregisterGS1CodeTransactionData.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload_DeregisterGS1CodeTransactionData.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload_DeregisterGS1CodeTransactionData.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload_DeregisterGS1CodeTransactionData.Size(m)
+}
+func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload_DeregisterGS1CodeTransactionData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload_DeregisterGS1CodeTransactionData proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) GetGs1Code() string {
+	if m != nil {
+		return m.Gs1Code
+	}
+	return ""
+}
+
+type SendONSTransactionPayload_RecordTranactionData struct {
+	Flags                int32    `protobuf:"varint,1,opt,name=flags" json:"flags,omitempty"`
+	Service              string   `protobuf:"bytes,2,opt,name=service" json:"service,omitempty"`
+	Regexp               string   `protobuf:"bytes,3,opt,name=regexp" json:"regexp,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SendONSTransactionPayload_RecordTranactionData) Reset() {
+	*m = SendONSTransactionPayload_RecordTranactionData{}
+}
+func (m *SendONSTransactionPayload_RecordTranactionData) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SendONSTransactionPayload_RecordTranactionData) ProtoMessage() {}
+func (*SendONSTransactionPayload_RecordTranactionData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 2}
+}
+func (m *SendONSTransactionPayload_RecordTranactionData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload_RecordTranactionData.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload_RecordTranactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload_RecordTranactionData.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload_RecordTranactionData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload_RecordTranactionData.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload_RecordTranactionData) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload_RecordTranactionData.Size(m)
+}
+func (m *SendONSTransactionPayload_RecordTranactionData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload_RecordTranactionData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload_RecordTranactionData proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload_RecordTranactionData) GetFlags() int32 {
+	if m != nil {
+		return m.Flags
+	}
+	return 0
+}
+
+func (m *SendONSTransactionPayload_RecordTranactionData) GetService() string {
+	if m != nil {
+		return m.Service
+	}
+	return ""
+}
+
+func (m *SendONSTransactionPayload_RecordTranactionData) GetRegexp() string {
+	if m != nil {
+		return m.Regexp
+	}
+	return ""
+}
+
+type SendONSTransactionPayload_AddRecordTransactionData struct {
+	Gs1Code              string                                          `protobuf:"bytes,1,opt,name=gs1_code,json=gs1Code" json:"gs1_code,omitempty"`
+	Record               *SendONSTransactionPayload_RecordTranactionData `protobuf:"bytes,2,opt,name=record" json:"record,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                        `json:"-"`
+	XXX_unrecognized     []byte                                          `json:"-"`
+	XXX_sizecache        int32                                           `json:"-"`
+}
+
+func (m *SendONSTransactionPayload_AddRecordTransactionData) Reset() {
+	*m = SendONSTransactionPayload_AddRecordTransactionData{}
+}
+func (m *SendONSTransactionPayload_AddRecordTransactionData) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SendONSTransactionPayload_AddRecordTransactionData) ProtoMessage() {}
+func (*SendONSTransactionPayload_AddRecordTransactionData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 3}
+}
+func (m *SendONSTransactionPayload_AddRecordTransactionData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload_AddRecordTransactionData.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload_AddRecordTransactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload_AddRecordTransactionData.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload_AddRecordTransactionData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload_AddRecordTransactionData.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload_AddRecordTransactionData) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload_AddRecordTransactionData.Size(m)
+}
+func (m *SendONSTransactionPayload_AddRecordTransactionData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload_AddRecordTransactionData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload_AddRecordTransactionData proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload_AddRecordTransactionData) GetGs1Code() string {
+	if m != nil {
+		return m.Gs1Code
+	}
+	return ""
+}
+
+func (m *SendONSTransactionPayload_AddRecordTransactionData) GetRecord() *SendONSTransactionPayload_RecordTranactionData {
+	if m != nil {
+		return m.Record
+	}
+	return nil
+}
+
+type SendONSTransactionPayload_RemoveRecordTransactionData struct {
+	Gs1Code              string   `protobuf:"bytes,1,opt,name=gs1_code,json=gs1Code" json:"gs1_code,omitempty"`
+	Index                uint32   `protobuf:"varint,2,opt,name=index" json:"index,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) Reset() {
+	*m = SendONSTransactionPayload_RemoveRecordTransactionData{}
+}
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SendONSTransactionPayload_RemoveRecordTransactionData) ProtoMessage() {}
+func (*SendONSTransactionPayload_RemoveRecordTransactionData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 4}
+}
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload_RemoveRecordTransactionData.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload_RemoveRecordTransactionData.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload_RemoveRecordTransactionData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload_RemoveRecordTransactionData.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload_RemoveRecordTransactionData.Size(m)
+}
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload_RemoveRecordTransactionData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload_RemoveRecordTransactionData proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) GetGs1Code() string {
+	if m != nil {
+		return m.Gs1Code
+	}
+	return ""
+}
+
+func (m *SendONSTransactionPayload_RemoveRecordTransactionData) GetIndex() uint32 {
+	if m != nil {
+		return m.Index
+	}
+	return 0
+}
+
+func init() {
+	proto.RegisterType((*Record)(nil), "Record")
+	proto.RegisterType((*GS1CodeData)(nil), "GS1CodeData")
+	proto.RegisterType((*SendONSTransactionPayload)(nil), "SendONSTransactionPayload")
+	proto.RegisterType((*SendONSTransactionPayload_RegisterGS1CodeTransactionData)(nil), "SendONSTransactionPayload.RegisterGS1CodeTransactionData")
+	proto.RegisterType((*SendONSTransactionPayload_DeregisterGS1CodeTransactionData)(nil), "SendONSTransactionPayload.DeregisterGS1CodeTransactionData")
+	proto.RegisterType((*SendONSTransactionPayload_RecordTranactionData)(nil), "SendONSTransactionPayload.RecordTranactionData")
+	proto.RegisterType((*SendONSTransactionPayload_AddRecordTransactionData)(nil), "SendONSTransactionPayload.AddRecordTransactionData")
+	proto.RegisterType((*SendONSTransactionPayload_RemoveRecordTransactionData)(nil), "SendONSTransactionPayload.RemoveRecordTransactionData")
+	proto.RegisterEnum("Record_RecordState", Record_RecordState_name, Record_RecordState_value)
+	proto.RegisterEnum("GS1CodeData_GS1CodeState", GS1CodeData_GS1CodeState_name, GS1CodeData_GS1CodeState_value)
+	proto.RegisterEnum("SendONSTransactionPayload_ONSTransactionType", SendONSTransactionPayload_ONSTransactionType_name, SendONSTransactionPayload_ONSTransactionType_value)
+}
+
+func init() { proto.RegisterFile("ons.proto", fileDescriptor_ons_e3bf37fc9538074f) }
+
+var fileDescriptor_ons_e3bf37fc9538074f = []byte{
+	// 592 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xdf, 0x8e, 0xd2, 0x4e,
+	0x14, 0xde, 0xc2, 0xaf, 0xfc, 0x39, 0x2c, 0x50, 0x06, 0xb2, 0x29, 0xfc, 0x12, 0x83, 0xbd, 0xc2,
+	0x0b, 0xd9, 0x6c, 0x37, 0x9a, 0x98, 0x8d, 0x17, 0x48, 0x1b, 0x82, 0x89, 0x60, 0x06, 0xb2, 0x31,
+	0x9a, 0xd8, 0x74, 0x99, 0x91, 0x34, 0xae, 0x9d, 0x66, 0xda, 0xe0, 0x72, 0xe3, 0x1b, 0xf8, 0x6a,
+	0xbe, 0x84, 0x2f, 0x62, 0x3a, 0x6d, 0xa1, 0x88, 0x8c, 0x37, 0x5e, 0xb5, 0xe7, 0x3b, 0x73, 0xbe,
+	0x73, 0xbe, 0x6f, 0xfe, 0x40, 0x95, 0xf9, 0xe1, 0x30, 0xe0, 0x2c, 0x62, 0xc6, 0x0f, 0x05, 0x4a,
+	0x98, 0xae, 0x18, 0x27, 0xa8, 0x03, 0xea, 0xa7, 0x7b, 0x77, 0x1d, 0xea, 0x4a, 0x5f, 0x19, 0xa8,
+	0x38, 0x09, 0x90, 0x0e, 0xe5, 0x90, 0xf2, 0x8d, 0xb7, 0xa2, 0x7a, 0xa1, 0xaf, 0x0c, 0xaa, 0x38,
+	0x0b, 0xd1, 0x05, 0x94, 0x38, 0x5d, 0xd3, 0x87, 0x40, 0x2f, 0x8a, 0x44, 0x1a, 0xa1, 0x27, 0xa0,
+	0x86, 0x91, 0x1b, 0x51, 0xfd, 0xbf, 0xbe, 0x32, 0x68, 0x98, 0xed, 0x61, 0xc2, 0x9f, 0x7e, 0x16,
+	0x71, 0x0a, 0x27, 0x2b, 0x50, 0x0f, 0x2a, 0x01, 0x67, 0x1b, 0x8f, 0x50, 0xae, 0xab, 0x82, 0x64,
+	0x17, 0x1b, 0xcf, 0xa0, 0x96, 0xab, 0x40, 0x6d, 0x68, 0x62, 0x7b, 0x3c, 0xc7, 0x96, 0x33, 0x9d,
+	0x8d, 0xc6, 0xcb, 0xe9, 0xad, 0xad, 0x9d, 0xa1, 0x16, 0xd4, 0x53, 0x30, 0x85, 0x14, 0xe3, 0xa7,
+	0x02, 0xb5, 0xc9, 0xe2, 0x6a, 0xcc, 0x08, 0xb5, 0xdc, 0xc8, 0x45, 0x5d, 0xa8, 0xac, 0xc3, 0x2b,
+	0x67, 0xc5, 0x08, 0x15, 0xc2, 0xaa, 0xb8, 0xbc, 0x0e, 0x45, 0x3a, 0x4e, 0xb1, 0xaf, 0x3e, 0xe5,
+	0x8e, 0x47, 0x32, 0x6d, 0x22, 0x9e, 0x12, 0xf4, 0x18, 0xca, 0x5c, 0x34, 0x0f, 0xf5, 0x62, 0xbf,
+	0x38, 0xa8, 0x99, 0xe5, 0x74, 0x7c, 0x9c, 0xe1, 0xe8, 0xf2, 0x50, 0x66, 0x77, 0x98, 0xeb, 0x9a,
+	0xfd, 0xe7, 0xc5, 0x1a, 0xaf, 0xe1, 0x3c, 0x0f, 0x23, 0x2d, 0x89, 0xe7, 0x96, 0xed, 0xcc, 0xe6,
+	0xb3, 0x58, 0x4e, 0x07, 0xb4, 0x0c, 0xd9, 0x89, 0x54, 0x10, 0x82, 0x46, 0x86, 0xa6, 0x58, 0xc1,
+	0xf8, 0x5e, 0x81, 0xee, 0x82, 0xfa, 0x64, 0x3e, 0x5b, 0x2c, 0xb9, 0xeb, 0x87, 0xee, 0x2a, 0xf2,
+	0x98, 0xff, 0xd6, 0xdd, 0xde, 0x33, 0x97, 0xa0, 0x77, 0xa0, 0x45, 0x7b, 0xd4, 0x89, 0xb6, 0x41,
+	0xa2, 0xbd, 0x61, 0x3e, 0x1d, 0x9e, 0xac, 0x1a, 0x1e, 0xa2, 0xcb, 0x6d, 0x40, 0x71, 0x33, 0x3a,
+	0x04, 0x10, 0x85, 0x16, 0xa7, 0x6b, 0x2f, 0x8c, 0x28, 0x77, 0x76, 0xb6, 0xc6, 0xde, 0xd5, 0xcc,
+	0x17, 0x12, 0x6a, 0x9c, 0xd6, 0xa4, 0xfa, 0x73, 0x2b, 0x62, 0xb7, 0x70, 0x33, 0xe3, 0x9c, 0xa4,
+	0x3b, 0xf3, 0x19, 0xda, 0x84, 0x1e, 0x37, 0x2a, 0x8a, 0x46, 0x37, 0x92, 0x46, 0xd6, 0xae, 0xea,
+	0x44, 0xab, 0xd6, 0x9e, 0x37, 0x6b, 0x86, 0x01, 0x5c, 0x42, 0x9c, 0x64, 0x5f, 0xc5, 0x6e, 0xd6,
+	0xcc, 0x6b, 0x49, 0x8f, 0x11, 0x21, 0xc9, 0x59, 0xf8, 0x9d, 0xbb, 0xea, 0x66, 0x19, 0xf4, 0x01,
+	0xea, 0x9c, 0x7e, 0x61, 0x1b, 0x9a, 0xd1, 0xaa, 0x82, 0xf6, 0xb9, 0xd4, 0xa3, 0x78, 0xfd, 0x9f,
+	0x99, 0xcf, 0x79, 0x2e, 0xd9, 0xbb, 0x81, 0x47, 0x72, 0x43, 0x25, 0x87, 0xbe, 0xf7, 0x12, 0xfa,
+	0x7f, 0x33, 0x49, 0x56, 0xfe, 0x11, 0x3a, 0xfb, 0x11, 0x73, 0x25, 0xff, 0xe8, 0xf1, 0xe8, 0x7d,
+	0x03, 0xfd, 0x94, 0xbf, 0xb2, 0xab, 0x3c, 0x89, 0xe9, 0x84, 0xd1, 0xc9, 0x61, 0xbc, 0x94, 0x1a,
+	0x7d, 0x3c, 0x3f, 0x4e, 0xcb, 0x7b, 0x33, 0xf8, 0x5f, 0xb2, 0x11, 0xb2, 0x11, 0x3a, 0xa0, 0x7a,
+	0x3e, 0xa1, 0x0f, 0x62, 0x82, 0x3a, 0x4e, 0x02, 0x83, 0x02, 0x3a, 0xbe, 0x57, 0xf1, 0x45, 0xc7,
+	0xf6, 0x64, 0xba, 0x58, 0xda, 0xd8, 0x49, 0xef, 0xb6, 0x76, 0x86, 0x2e, 0x00, 0x59, 0xf6, 0x11,
+	0xae, 0xa0, 0x06, 0xc0, 0xc8, 0xb2, 0x9c, 0xe4, 0xa5, 0xd3, 0x0a, 0xc9, 0xab, 0xf7, 0x66, 0x7e,
+	0x6b, 0x67, 0x50, 0xf1, 0x55, 0xf5, 0x7d, 0x99, 0xf9, 0xa1, 0x13, 0xdc, 0x99, 0x77, 0x25, 0xf1,
+	0xb0, 0x5f, 0xff, 0x0a, 0x00, 0x00, 0xff, 0xff, 0x00, 0x82, 0x3e, 0xed, 0xe5, 0x05, 0x00, 0x00,
 }

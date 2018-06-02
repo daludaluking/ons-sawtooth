@@ -1,0 +1,2 @@
+export GOPATH=$GOPATH:$HOME/go/projects/ons-sawtooth/src/sawtooth_ons
+protoc --go_out=../src/protobuf/ons_pb2 ons.proto
