@@ -7,6 +7,7 @@ import (
 	"sawtooth_sdk/processor"
 	"sawtooth_sdk/protobuf/processor_pb2"
 	"sawtooth_ons/ons_state"
+	"strings"
 )
 
 var logger *logging.Logger = logging.Get()
@@ -82,6 +83,10 @@ func applyDeregiserGS1Code(deregisterGS1CodeData *ons_pb2.SendONSTransactionPayl
 		return &processor.InvalidTransactionError{Msg: "GS1 Code doesn't exist"}
 	}
 
+	if strings.Compare(gs1_code_data.GetOwnerId(), requestor) != 0 {
+		return &processor.InvalidTransactionError{Msg: "Requestor's public key doesn't match with owner pubic key of GS1 Code"}
+	}
+
 	return ons_state.DeleteGS1Code(deregisterGS1CodeData.GetGs1Code(), context)
 }
 
@@ -90,6 +95,12 @@ func applyAddRecord(addRecordData *ons_pb2.SendONSTransactionPayload_AddRecordTr
 	if err != nil {
 		return err
 	}
+
+	if gs1_code_data == nil {
+		return &processor.InvalidTransactionError{Msg: "GS1 Code doesn't exist"}
+	}
+
+	fmt.Printf("%v\n", gs1_code_data)
 
 	//permissino check??
 	//ons_pb2.SendONSTransactionPayload_RecordTranactionData
@@ -100,8 +111,12 @@ func applyAddRecord(addRecordData *ons_pb2.SendONSTransactionPayload_AddRecordTr
 		Regexp:  addRecordData.GetRecord().GetRegexp(),
 		State: ons_pb2.Record_RECORD_INACTIVE,
 	}
-	
-	gs1_code_data.Records = append(gs1_code_data.Records, new_record)
+
+	if gs1_code_data.Records == nil {
+		gs1_code_data.Records = []*ons_pb2.Record{new_record}
+	}else {	
+		gs1_code_data.Records = append(gs1_code_data.Records, new_record)
+	}
 
 	return ons_state.SaveGS1Code(gs1_code_data, context)
 }
@@ -110,6 +125,10 @@ func applyRemoveRecord(removeRecordData *ons_pb2.SendONSTransactionPayload_Remov
 	gs1_code_data, err := ons_state.LoadGS1Code(removeRecordData.GetGs1Code(), context)
 	if err != nil {
 		return err
+	}
+
+	if gs1_code_data == nil {
+		return &processor.InvalidTransactionError{Msg: "GS1 Code doesn't exist"}
 	}
 
 	idx := removeRecordData.GetIndex()
