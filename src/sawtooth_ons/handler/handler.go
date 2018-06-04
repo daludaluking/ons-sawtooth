@@ -2,12 +2,14 @@ package handler
 
 import (
 	"fmt"
+	"strings"
 	"protobuf/ons_pb2"
+	"sawtooth_ons/ons_state"
+	"sawtooth_ons/ons_service"
 	"sawtooth_sdk/logging"
 	"sawtooth_sdk/processor"
 	"sawtooth_sdk/protobuf/processor_pb2"
-	"sawtooth_ons/ons_state"
-	"strings"
+	"github.com/golang/protobuf/proto"
 )
 
 var logger *logging.Logger = logging.Get()
@@ -29,8 +31,8 @@ func (self *ONSHandler) Namespaces() []string {
 
 func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *processor.Context) error {
 
-	requestor_pk := request.GetHeader().GetSignerPublicKey();
-	payload, err := ons_state.UnpackPayload(request.GetPayload())
+	requestor_pk := request.GetHeader().GetSignerPublicKey()
+	payload, err := UnpackPayload(request.GetPayload())
 
 	logger.Debugf("call apply from ", requestor_pk)
 
@@ -39,7 +41,11 @@ func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *
 	}
 
 	logger.Debugf("ONS txn %v: type %v", request.Signature, payload.TransactionType)
+/*
+	RegisterServiceType   *SendONSTransactionPayload_RegisterServiceTypeTransactionData   `protobuf:"bytes,6,opt,name=register_service_type,json=registerServiceType" json:"register_service_type,omitempty"`
+	DeregisterServiceType *SendONSTransactionPayload_DeregisterServiceTypeTransactionData `protobuf:"bytes,7,opt,name=deregister_service_type,json=deregisterServiceType" json:"deregister_service_type,omitempty"`
 
+*/
 	switch payload.TransactionType {
 	case ons_pb2.SendONSTransactionPayload_REGISTER_GS1CODE:
 		return applyRegiserGS1Code(payload.RegisterGs1Code, context, requestor_pk)
@@ -48,7 +54,11 @@ func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *
 	case ons_pb2.SendONSTransactionPayload_ADD_RECORD:
 		return applyAddRecord(payload.AddRecord, context, requestor_pk)
 	case ons_pb2.SendONSTransactionPayload_REMOVE_RECORD:
-		return applyRemoveRecord(payload.RemoveRecord, context, requestor_pk) 
+		return applyRemoveRecord(payload.RemoveRecord, context, requestor_pk)
+	case ons_pb2.SendONSTransactionPayload_REGISTER_SERVICETYPE:
+		return applyRegiserServiceType(payload.RegisterServiceType, context, requestor_pk)
+	case ons_pb2.SendONSTransactionPayload_DEREGISTER_SERVICETYPE:
+		return applyDeregiserServiceType(payload.DeregisterServiceType, context, requestor_pk)
 	default:
 		return &processor.InvalidTransactionError{
 			Msg: fmt.Sprintf("Invalid TransactionType: '%v'", payload.TransactionType)}
@@ -66,8 +76,8 @@ func applyRegiserGS1Code(registerGS1CodeData *ons_pb2.SendONSTransactionPayload_
 	}
 
 	new_gs1_code := &ons_pb2.GS1CodeData{
-		Gs1Code:    registerGS1CodeData.GetGs1Code(),
-		OwnerId:    requestor,
+		Gs1Code: registerGS1CodeData.GetGs1Code(),
+		OwnerId: requestor,
 	}
 
 	return ons_state.SaveGS1Code(new_gs1_code, context)
@@ -105,16 +115,17 @@ func applyAddRecord(addRecordData *ons_pb2.SendONSTransactionPayload_AddRecordTr
 	//permissino check??
 	//ons_pb2.SendONSTransactionPayload_RecordTranactionData
 	//ons_pb2.Record
-	new_record := &ons_pb2.Record {
-		Flags:   addRecordData.GetRecord().GetFlags(),
-		Service: addRecordData.GetRecord().GetService(),
-		Regexp:  addRecordData.GetRecord().GetRegexp(),
-		State: ons_pb2.Record_RECORD_INACTIVE,
+	new_record := &ons_pb2.Record{
+		Flags:    addRecordData.GetRecord().GetFlags(),
+		Service:  addRecordData.GetRecord().GetService(),
+		Regexp:   addRecordData.GetRecord().GetRegexp(),
+		State:    ons_pb2.Record_RECORD_INACTIVE,
+		Provider: requestor,
 	}
 
 	if gs1_code_data.Records == nil {
 		gs1_code_data.Records = []*ons_pb2.Record{new_record}
-	}else {	
+	} else {
 		gs1_code_data.Records = append(gs1_code_data.Records, new_record)
 	}
 
@@ -144,4 +155,58 @@ func applyRemoveRecord(removeRecordData *ons_pb2.SendONSTransactionPayload_Remov
 	gs1_code_data.Records = append(gs1_code_data.Records[0:idx], gs1_code_data.Records[idx+1:]...)
 
 	return ons_state.SaveGS1Code(gs1_code_data, context)
+}
+
+func applyRegiserServiceType(registerServiceType *ons_pb2.SendONSTransactionPayload_RegisterServiceTypeTransactionData, context *processor.Context, requestor string) error {
+	service_type := registerServiceType.ServiceType
+	address, err := ons_service.MakeAddress(requestor, service_type)
+	if err != nil {
+		return err;
+	}
+
+	tmp_data, err := ons_service.LoadServiceType(address, context)
+
+	if err != nil {
+		return err;
+	}
+
+	if tmp_data != nil {
+		return &processor.InvalidTransactionError{Msg: "The same service type already exists"}
+	}
+
+	//Address와 Provider를 설정한다.
+	service_type.Address = address
+	service_type.Provider = requestor
+
+	return ons_service.SaveServiceType(address, service_type, context)
+}
+
+func applyDeregiserServiceType(deregisterServiceType *ons_pb2.SendONSTransactionPayload_DeregisterServiceTypeTransactionData, context *processor.Context, requestor string) error {
+	address := deregisterServiceType.Address
+
+	tmp_data, err := ons_service.LoadServiceType(address, context)
+
+	if err != nil {
+		return err;
+	}
+
+	if tmp_data == nil {
+		return &processor.InvalidTransactionError{Msg: "The service type doesn't exists"}
+	}
+
+	if strings.Compare(tmp_data.GetProvider(), requestor) != 0 {
+		return &processor.InvalidTransactionError{Msg: "Requestor's public key doesn't match with provider pubic key of Service Type"}
+	}
+
+	return ons_service.DeleteServiceType(address, context)
+}
+
+func UnpackPayload(payloadData []byte) (*ons_pb2.SendONSTransactionPayload, error) {
+	payload := &ons_pb2.SendONSTransactionPayload{}
+	err := proto.Unmarshal(payloadData, payload)
+	if err != nil {
+		return nil, &processor.InternalError{
+			Msg: fmt.Sprint("Failed to unmarshal ONSTransaction: %v", err)}
+	}
+	return payload, nil
 }

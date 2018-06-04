@@ -40,7 +40,7 @@ func (x Record_RecordState) String() string {
 	return proto.EnumName(Record_RecordState_name, int32(x))
 }
 func (Record_RecordState) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{0, 0}
+	return fileDescriptor_ons_d69456b88701cf20, []int{3, 0}
 }
 
 type GS1CodeData_GS1CodeState int32
@@ -66,16 +66,18 @@ func (x GS1CodeData_GS1CodeState) String() string {
 	return proto.EnumName(GS1CodeData_GS1CodeState_name, int32(x))
 }
 func (GS1CodeData_GS1CodeState) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{1, 0}
+	return fileDescriptor_ons_d69456b88701cf20, []int{4, 0}
 }
 
 type SendONSTransactionPayload_ONSTransactionType int32
 
 const (
-	SendONSTransactionPayload_REGISTER_GS1CODE   SendONSTransactionPayload_ONSTransactionType = 0
-	SendONSTransactionPayload_DEREGISTER_GS1CODE SendONSTransactionPayload_ONSTransactionType = 1
-	SendONSTransactionPayload_ADD_RECORD         SendONSTransactionPayload_ONSTransactionType = 2
-	SendONSTransactionPayload_REMOVE_RECORD      SendONSTransactionPayload_ONSTransactionType = 3
+	SendONSTransactionPayload_REGISTER_GS1CODE       SendONSTransactionPayload_ONSTransactionType = 0
+	SendONSTransactionPayload_DEREGISTER_GS1CODE     SendONSTransactionPayload_ONSTransactionType = 1
+	SendONSTransactionPayload_ADD_RECORD             SendONSTransactionPayload_ONSTransactionType = 2
+	SendONSTransactionPayload_REMOVE_RECORD          SendONSTransactionPayload_ONSTransactionType = 3
+	SendONSTransactionPayload_REGISTER_SERVICETYPE   SendONSTransactionPayload_ONSTransactionType = 4
+	SendONSTransactionPayload_DEREGISTER_SERVICETYPE SendONSTransactionPayload_ONSTransactionType = 5
 )
 
 var SendONSTransactionPayload_ONSTransactionType_name = map[int32]string{
@@ -83,19 +85,166 @@ var SendONSTransactionPayload_ONSTransactionType_name = map[int32]string{
 	1: "DEREGISTER_GS1CODE",
 	2: "ADD_RECORD",
 	3: "REMOVE_RECORD",
+	4: "REGISTER_SERVICETYPE",
+	5: "DEREGISTER_SERVICETYPE",
 }
 var SendONSTransactionPayload_ONSTransactionType_value = map[string]int32{
-	"REGISTER_GS1CODE":   0,
-	"DEREGISTER_GS1CODE": 1,
-	"ADD_RECORD":         2,
-	"REMOVE_RECORD":      3,
+	"REGISTER_GS1CODE":       0,
+	"DEREGISTER_GS1CODE":     1,
+	"ADD_RECORD":             2,
+	"REMOVE_RECORD":          3,
+	"REGISTER_SERVICETYPE":   4,
+	"DEREGISTER_SERVICETYPE": 5,
 }
 
 func (x SendONSTransactionPayload_ONSTransactionType) String() string {
 	return proto.EnumName(SendONSTransactionPayload_ONSTransactionType_name, int32(x))
 }
 func (SendONSTransactionPayload_ONSTransactionType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 0}
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 0}
+}
+
+type NestedFields struct {
+	Fields               map[string]string `protobuf:"bytes,1,rep,name=fields" json:"fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *NestedFields) Reset()         { *m = NestedFields{} }
+func (m *NestedFields) String() string { return proto.CompactTextString(m) }
+func (*NestedFields) ProtoMessage()    {}
+func (*NestedFields) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_d69456b88701cf20, []int{0}
+}
+func (m *NestedFields) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NestedFields.Unmarshal(m, b)
+}
+func (m *NestedFields) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NestedFields.Marshal(b, m, deterministic)
+}
+func (dst *NestedFields) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NestedFields.Merge(dst, src)
+}
+func (m *NestedFields) XXX_Size() int {
+	return xxx_messageInfo_NestedFields.Size(m)
+}
+func (m *NestedFields) XXX_DiscardUnknown() {
+	xxx_messageInfo_NestedFields.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NestedFields proto.InternalMessageInfo
+
+func (m *NestedFields) GetFields() map[string]string {
+	if m != nil {
+		return m.Fields
+	}
+	return nil
+}
+
+type ServiceTypeFields struct {
+	Fields               map[string]string        `protobuf:"bytes,1,rep,name=fields" json:"fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	NestedFields         map[string]*NestedFields `protobuf:"bytes,2,rep,name=nested_fields,json=nestedFields" json:"nested_fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
+	XXX_unrecognized     []byte                   `json:"-"`
+	XXX_sizecache        int32                    `json:"-"`
+}
+
+func (m *ServiceTypeFields) Reset()         { *m = ServiceTypeFields{} }
+func (m *ServiceTypeFields) String() string { return proto.CompactTextString(m) }
+func (*ServiceTypeFields) ProtoMessage()    {}
+func (*ServiceTypeFields) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_d69456b88701cf20, []int{1}
+}
+func (m *ServiceTypeFields) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceTypeFields.Unmarshal(m, b)
+}
+func (m *ServiceTypeFields) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceTypeFields.Marshal(b, m, deterministic)
+}
+func (dst *ServiceTypeFields) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceTypeFields.Merge(dst, src)
+}
+func (m *ServiceTypeFields) XXX_Size() int {
+	return xxx_messageInfo_ServiceTypeFields.Size(m)
+}
+func (m *ServiceTypeFields) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceTypeFields.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServiceTypeFields proto.InternalMessageInfo
+
+func (m *ServiceTypeFields) GetFields() map[string]string {
+	if m != nil {
+		return m.Fields
+	}
+	return nil
+}
+
+func (m *ServiceTypeFields) GetNestedFields() map[string]*NestedFields {
+	if m != nil {
+		return m.NestedFields
+	}
+	return nil
+}
+
+type ServiceType struct {
+	// service_type_address는 transaction process 내부적으로 생성된다.
+	// client에서 저장한 service_type_address는 무시된다.
+	Address  string                        `protobuf:"bytes,1,opt,name=address" json:"address,omitempty"`
+	Contents map[string]*ServiceTypeFields `protobuf:"bytes,2,rep,name=contents" json:"contents,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// service type을 등록하는 address. (service type 제공자의 public key)
+	// client에서 저장한 public key는 무시되고 transaction을 전송할 때 사용된
+	// public key를 사용한다.
+	Provider             string   `protobuf:"bytes,3,opt,name=provider" json:"provider,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ServiceType) Reset()         { *m = ServiceType{} }
+func (m *ServiceType) String() string { return proto.CompactTextString(m) }
+func (*ServiceType) ProtoMessage()    {}
+func (*ServiceType) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_d69456b88701cf20, []int{2}
+}
+func (m *ServiceType) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceType.Unmarshal(m, b)
+}
+func (m *ServiceType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceType.Marshal(b, m, deterministic)
+}
+func (dst *ServiceType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceType.Merge(dst, src)
+}
+func (m *ServiceType) XXX_Size() int {
+	return xxx_messageInfo_ServiceType.Size(m)
+}
+func (m *ServiceType) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceType.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServiceType proto.InternalMessageInfo
+
+func (m *ServiceType) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *ServiceType) GetContents() map[string]*ServiceTypeFields {
+	if m != nil {
+		return m.Contents
+	}
+	return nil
+}
+
+func (m *ServiceType) GetProvider() string {
+	if m != nil {
+		return m.Provider
+	}
+	return ""
 }
 
 type Record struct {
@@ -117,7 +266,7 @@ func (m *Record) Reset()         { *m = Record{} }
 func (m *Record) String() string { return proto.CompactTextString(m) }
 func (*Record) ProtoMessage()    {}
 func (*Record) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{0}
+	return fileDescriptor_ons_d69456b88701cf20, []int{3}
 }
 func (m *Record) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Record.Unmarshal(m, b)
@@ -190,7 +339,7 @@ func (m *GS1CodeData) Reset()         { *m = GS1CodeData{} }
 func (m *GS1CodeData) String() string { return proto.CompactTextString(m) }
 func (*GS1CodeData) ProtoMessage()    {}
 func (*GS1CodeData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{1}
+	return fileDescriptor_ons_d69456b88701cf20, []int{4}
 }
 func (m *GS1CodeData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GS1CodeData.Unmarshal(m, b)
@@ -239,21 +388,23 @@ func (m *GS1CodeData) GetState() GS1CodeData_GS1CodeState {
 }
 
 type SendONSTransactionPayload struct {
-	TransactionType      SendONSTransactionPayload_ONSTransactionType                `protobuf:"varint,1,opt,name=transaction_type,json=transactionType,enum=SendONSTransactionPayload_ONSTransactionType" json:"transaction_type,omitempty"`
-	RegisterGs1Code      *SendONSTransactionPayload_RegisterGS1CodeTransactionData   `protobuf:"bytes,2,opt,name=register_gs1_code,json=registerGs1Code" json:"register_gs1_code,omitempty"`
-	DeregisterGs1Code    *SendONSTransactionPayload_DeregisterGS1CodeTransactionData `protobuf:"bytes,3,opt,name=deregister_gs1_code,json=deregisterGs1Code" json:"deregister_gs1_code,omitempty"`
-	AddRecord            *SendONSTransactionPayload_AddRecordTransactionData         `protobuf:"bytes,4,opt,name=add_record,json=addRecord" json:"add_record,omitempty"`
-	RemoveRecord         *SendONSTransactionPayload_RemoveRecordTransactionData      `protobuf:"bytes,5,opt,name=remove_record,json=removeRecord" json:"remove_record,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                                    `json:"-"`
-	XXX_unrecognized     []byte                                                      `json:"-"`
-	XXX_sizecache        int32                                                       `json:"-"`
+	TransactionType       SendONSTransactionPayload_ONSTransactionType                    `protobuf:"varint,1,opt,name=transaction_type,json=transactionType,enum=SendONSTransactionPayload_ONSTransactionType" json:"transaction_type,omitempty"`
+	RegisterGs1Code       *SendONSTransactionPayload_RegisterGS1CodeTransactionData       `protobuf:"bytes,2,opt,name=register_gs1_code,json=registerGs1Code" json:"register_gs1_code,omitempty"`
+	DeregisterGs1Code     *SendONSTransactionPayload_DeregisterGS1CodeTransactionData     `protobuf:"bytes,3,opt,name=deregister_gs1_code,json=deregisterGs1Code" json:"deregister_gs1_code,omitempty"`
+	AddRecord             *SendONSTransactionPayload_AddRecordTransactionData             `protobuf:"bytes,4,opt,name=add_record,json=addRecord" json:"add_record,omitempty"`
+	RemoveRecord          *SendONSTransactionPayload_RemoveRecordTransactionData          `protobuf:"bytes,5,opt,name=remove_record,json=removeRecord" json:"remove_record,omitempty"`
+	RegisterServiceType   *SendONSTransactionPayload_RegisterServiceTypeTransactionData   `protobuf:"bytes,6,opt,name=register_service_type,json=registerServiceType" json:"register_service_type,omitempty"`
+	DeregisterServiceType *SendONSTransactionPayload_DeregisterServiceTypeTransactionData `protobuf:"bytes,7,opt,name=deregister_service_type,json=deregisterServiceType" json:"deregister_service_type,omitempty"`
+	XXX_NoUnkeyedLiteral  struct{}                                                        `json:"-"`
+	XXX_unrecognized      []byte                                                          `json:"-"`
+	XXX_sizecache         int32                                                           `json:"-"`
 }
 
 func (m *SendONSTransactionPayload) Reset()         { *m = SendONSTransactionPayload{} }
 func (m *SendONSTransactionPayload) String() string { return proto.CompactTextString(m) }
 func (*SendONSTransactionPayload) ProtoMessage()    {}
 func (*SendONSTransactionPayload) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{2}
+	return fileDescriptor_ons_d69456b88701cf20, []int{5}
 }
 func (m *SendONSTransactionPayload) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendONSTransactionPayload.Unmarshal(m, b)
@@ -308,6 +459,20 @@ func (m *SendONSTransactionPayload) GetRemoveRecord() *SendONSTransactionPayload
 	return nil
 }
 
+func (m *SendONSTransactionPayload) GetRegisterServiceType() *SendONSTransactionPayload_RegisterServiceTypeTransactionData {
+	if m != nil {
+		return m.RegisterServiceType
+	}
+	return nil
+}
+
+func (m *SendONSTransactionPayload) GetDeregisterServiceType() *SendONSTransactionPayload_DeregisterServiceTypeTransactionData {
+	if m != nil {
+		return m.DeregisterServiceType
+	}
+	return nil
+}
+
 type SendONSTransactionPayload_RegisterGS1CodeTransactionData struct {
 	Gs1Code              string   `protobuf:"bytes,1,opt,name=gs1_code,json=gs1Code" json:"gs1_code,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -323,7 +488,7 @@ func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) String() stri
 }
 func (*SendONSTransactionPayload_RegisterGS1CodeTransactionData) ProtoMessage() {}
 func (*SendONSTransactionPayload_RegisterGS1CodeTransactionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 0}
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 0}
 }
 func (m *SendONSTransactionPayload_RegisterGS1CodeTransactionData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendONSTransactionPayload_RegisterGS1CodeTransactionData.Unmarshal(m, b)
@@ -365,7 +530,7 @@ func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) String() st
 }
 func (*SendONSTransactionPayload_DeregisterGS1CodeTransactionData) ProtoMessage() {}
 func (*SendONSTransactionPayload_DeregisterGS1CodeTransactionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 1}
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 1}
 }
 func (m *SendONSTransactionPayload_DeregisterGS1CodeTransactionData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendONSTransactionPayload_DeregisterGS1CodeTransactionData.Unmarshal(m, b)
@@ -409,7 +574,7 @@ func (m *SendONSTransactionPayload_RecordTranactionData) String() string {
 }
 func (*SendONSTransactionPayload_RecordTranactionData) ProtoMessage() {}
 func (*SendONSTransactionPayload_RecordTranactionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 2}
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 2}
 }
 func (m *SendONSTransactionPayload_RecordTranactionData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendONSTransactionPayload_RecordTranactionData.Unmarshal(m, b)
@@ -466,7 +631,7 @@ func (m *SendONSTransactionPayload_AddRecordTransactionData) String() string {
 }
 func (*SendONSTransactionPayload_AddRecordTransactionData) ProtoMessage() {}
 func (*SendONSTransactionPayload_AddRecordTransactionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 3}
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 3}
 }
 func (m *SendONSTransactionPayload_AddRecordTransactionData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendONSTransactionPayload_AddRecordTransactionData.Unmarshal(m, b)
@@ -516,7 +681,7 @@ func (m *SendONSTransactionPayload_RemoveRecordTransactionData) String() string 
 }
 func (*SendONSTransactionPayload_RemoveRecordTransactionData) ProtoMessage() {}
 func (*SendONSTransactionPayload_RemoveRecordTransactionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ons_e3bf37fc9538074f, []int{2, 4}
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 4}
 }
 func (m *SendONSTransactionPayload_RemoveRecordTransactionData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendONSTransactionPayload_RemoveRecordTransactionData.Unmarshal(m, b)
@@ -550,7 +715,98 @@ func (m *SendONSTransactionPayload_RemoveRecordTransactionData) GetIndex() uint3
 	return 0
 }
 
+type SendONSTransactionPayload_RegisterServiceTypeTransactionData struct {
+	ServiceType          *ServiceType `protobuf:"bytes,1,opt,name=service_type,json=serviceType" json:"service_type,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
+}
+
+func (m *SendONSTransactionPayload_RegisterServiceTypeTransactionData) Reset() {
+	*m = SendONSTransactionPayload_RegisterServiceTypeTransactionData{}
+}
+func (m *SendONSTransactionPayload_RegisterServiceTypeTransactionData) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SendONSTransactionPayload_RegisterServiceTypeTransactionData) ProtoMessage() {}
+func (*SendONSTransactionPayload_RegisterServiceTypeTransactionData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 5}
+}
+func (m *SendONSTransactionPayload_RegisterServiceTypeTransactionData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload_RegisterServiceTypeTransactionData.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload_RegisterServiceTypeTransactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload_RegisterServiceTypeTransactionData.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload_RegisterServiceTypeTransactionData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload_RegisterServiceTypeTransactionData.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload_RegisterServiceTypeTransactionData) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload_RegisterServiceTypeTransactionData.Size(m)
+}
+func (m *SendONSTransactionPayload_RegisterServiceTypeTransactionData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload_RegisterServiceTypeTransactionData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload_RegisterServiceTypeTransactionData proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload_RegisterServiceTypeTransactionData) GetServiceType() *ServiceType {
+	if m != nil {
+		return m.ServiceType
+	}
+	return nil
+}
+
+type SendONSTransactionPayload_DeregisterServiceTypeTransactionData struct {
+	Address              string   `protobuf:"bytes,1,opt,name=address" json:"address,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) Reset() {
+	*m = SendONSTransactionPayload_DeregisterServiceTypeTransactionData{}
+}
+func (m *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SendONSTransactionPayload_DeregisterServiceTypeTransactionData) ProtoMessage() {}
+func (*SendONSTransactionPayload_DeregisterServiceTypeTransactionData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ons_d69456b88701cf20, []int{5, 6}
+}
+func (m *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendONSTransactionPayload_DeregisterServiceTypeTransactionData.Unmarshal(m, b)
+}
+func (m *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendONSTransactionPayload_DeregisterServiceTypeTransactionData.Marshal(b, m, deterministic)
+}
+func (dst *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendONSTransactionPayload_DeregisterServiceTypeTransactionData.Merge(dst, src)
+}
+func (m *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) XXX_Size() int {
+	return xxx_messageInfo_SendONSTransactionPayload_DeregisterServiceTypeTransactionData.Size(m)
+}
+func (m *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendONSTransactionPayload_DeregisterServiceTypeTransactionData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SendONSTransactionPayload_DeregisterServiceTypeTransactionData proto.InternalMessageInfo
+
+func (m *SendONSTransactionPayload_DeregisterServiceTypeTransactionData) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
 func init() {
+	proto.RegisterType((*NestedFields)(nil), "NestedFields")
+	proto.RegisterMapType((map[string]string)(nil), "NestedFields.FieldsEntry")
+	proto.RegisterType((*ServiceTypeFields)(nil), "ServiceTypeFields")
+	proto.RegisterMapType((map[string]string)(nil), "ServiceTypeFields.FieldsEntry")
+	proto.RegisterMapType((map[string]*NestedFields)(nil), "ServiceTypeFields.NestedFieldsEntry")
+	proto.RegisterType((*ServiceType)(nil), "ServiceType")
+	proto.RegisterMapType((map[string]*ServiceTypeFields)(nil), "ServiceType.ContentsEntry")
 	proto.RegisterType((*Record)(nil), "Record")
 	proto.RegisterType((*GS1CodeData)(nil), "GS1CodeData")
 	proto.RegisterType((*SendONSTransactionPayload)(nil), "SendONSTransactionPayload")
@@ -559,50 +815,70 @@ func init() {
 	proto.RegisterType((*SendONSTransactionPayload_RecordTranactionData)(nil), "SendONSTransactionPayload.RecordTranactionData")
 	proto.RegisterType((*SendONSTransactionPayload_AddRecordTransactionData)(nil), "SendONSTransactionPayload.AddRecordTransactionData")
 	proto.RegisterType((*SendONSTransactionPayload_RemoveRecordTransactionData)(nil), "SendONSTransactionPayload.RemoveRecordTransactionData")
+	proto.RegisterType((*SendONSTransactionPayload_RegisterServiceTypeTransactionData)(nil), "SendONSTransactionPayload.RegisterServiceTypeTransactionData")
+	proto.RegisterType((*SendONSTransactionPayload_DeregisterServiceTypeTransactionData)(nil), "SendONSTransactionPayload.DeregisterServiceTypeTransactionData")
 	proto.RegisterEnum("Record_RecordState", Record_RecordState_name, Record_RecordState_value)
 	proto.RegisterEnum("GS1CodeData_GS1CodeState", GS1CodeData_GS1CodeState_name, GS1CodeData_GS1CodeState_value)
 	proto.RegisterEnum("SendONSTransactionPayload_ONSTransactionType", SendONSTransactionPayload_ONSTransactionType_name, SendONSTransactionPayload_ONSTransactionType_value)
 }
 
-func init() { proto.RegisterFile("ons.proto", fileDescriptor_ons_e3bf37fc9538074f) }
+func init() { proto.RegisterFile("ons.proto", fileDescriptor_ons_d69456b88701cf20) }
 
-var fileDescriptor_ons_e3bf37fc9538074f = []byte{
-	// 592 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xdf, 0x8e, 0xd2, 0x4e,
-	0x14, 0xde, 0xc2, 0xaf, 0xfc, 0x39, 0x2c, 0x50, 0x06, 0xb2, 0x29, 0xfc, 0x12, 0x83, 0xbd, 0xc2,
-	0x0b, 0xd9, 0x6c, 0x37, 0x9a, 0x98, 0x8d, 0x17, 0x48, 0x1b, 0x82, 0x89, 0x60, 0x06, 0xb2, 0x31,
-	0x9a, 0xd8, 0x74, 0x99, 0x91, 0x34, 0xae, 0x9d, 0x66, 0xda, 0xe0, 0x72, 0xe3, 0x1b, 0xf8, 0x6a,
-	0xbe, 0x84, 0x2f, 0x62, 0x3a, 0x6d, 0xa1, 0x88, 0x8c, 0x37, 0x5e, 0xb5, 0xe7, 0x3b, 0x73, 0xbe,
-	0x73, 0xbe, 0x6f, 0xfe, 0x40, 0x95, 0xf9, 0xe1, 0x30, 0xe0, 0x2c, 0x62, 0xc6, 0x0f, 0x05, 0x4a,
-	0x98, 0xae, 0x18, 0x27, 0xa8, 0x03, 0xea, 0xa7, 0x7b, 0x77, 0x1d, 0xea, 0x4a, 0x5f, 0x19, 0xa8,
-	0x38, 0x09, 0x90, 0x0e, 0xe5, 0x90, 0xf2, 0x8d, 0xb7, 0xa2, 0x7a, 0xa1, 0xaf, 0x0c, 0xaa, 0x38,
-	0x0b, 0xd1, 0x05, 0x94, 0x38, 0x5d, 0xd3, 0x87, 0x40, 0x2f, 0x8a, 0x44, 0x1a, 0xa1, 0x27, 0xa0,
-	0x86, 0x91, 0x1b, 0x51, 0xfd, 0xbf, 0xbe, 0x32, 0x68, 0x98, 0xed, 0x61, 0xc2, 0x9f, 0x7e, 0x16,
-	0x71, 0x0a, 0x27, 0x2b, 0x50, 0x0f, 0x2a, 0x01, 0x67, 0x1b, 0x8f, 0x50, 0xae, 0xab, 0x82, 0x64,
-	0x17, 0x1b, 0xcf, 0xa0, 0x96, 0xab, 0x40, 0x6d, 0x68, 0x62, 0x7b, 0x3c, 0xc7, 0x96, 0x33, 0x9d,
-	0x8d, 0xc6, 0xcb, 0xe9, 0xad, 0xad, 0x9d, 0xa1, 0x16, 0xd4, 0x53, 0x30, 0x85, 0x14, 0xe3, 0xa7,
-	0x02, 0xb5, 0xc9, 0xe2, 0x6a, 0xcc, 0x08, 0xb5, 0xdc, 0xc8, 0x45, 0x5d, 0xa8, 0xac, 0xc3, 0x2b,
-	0x67, 0xc5, 0x08, 0x15, 0xc2, 0xaa, 0xb8, 0xbc, 0x0e, 0x45, 0x3a, 0x4e, 0xb1, 0xaf, 0x3e, 0xe5,
-	0x8e, 0x47, 0x32, 0x6d, 0x22, 0x9e, 0x12, 0xf4, 0x18, 0xca, 0x5c, 0x34, 0x0f, 0xf5, 0x62, 0xbf,
-	0x38, 0xa8, 0x99, 0xe5, 0x74, 0x7c, 0x9c, 0xe1, 0xe8, 0xf2, 0x50, 0x66, 0x77, 0x98, 0xeb, 0x9a,
-	0xfd, 0xe7, 0xc5, 0x1a, 0xaf, 0xe1, 0x3c, 0x0f, 0x23, 0x2d, 0x89, 0xe7, 0x96, 0xed, 0xcc, 0xe6,
-	0xb3, 0x58, 0x4e, 0x07, 0xb4, 0x0c, 0xd9, 0x89, 0x54, 0x10, 0x82, 0x46, 0x86, 0xa6, 0x58, 0xc1,
-	0xf8, 0x5e, 0x81, 0xee, 0x82, 0xfa, 0x64, 0x3e, 0x5b, 0x2c, 0xb9, 0xeb, 0x87, 0xee, 0x2a, 0xf2,
-	0x98, 0xff, 0xd6, 0xdd, 0xde, 0x33, 0x97, 0xa0, 0x77, 0xa0, 0x45, 0x7b, 0xd4, 0x89, 0xb6, 0x41,
-	0xa2, 0xbd, 0x61, 0x3e, 0x1d, 0x9e, 0xac, 0x1a, 0x1e, 0xa2, 0xcb, 0x6d, 0x40, 0x71, 0x33, 0x3a,
-	0x04, 0x10, 0x85, 0x16, 0xa7, 0x6b, 0x2f, 0x8c, 0x28, 0x77, 0x76, 0xb6, 0xc6, 0xde, 0xd5, 0xcc,
-	0x17, 0x12, 0x6a, 0x9c, 0xd6, 0xa4, 0xfa, 0x73, 0x2b, 0x62, 0xb7, 0x70, 0x33, 0xe3, 0x9c, 0xa4,
-	0x3b, 0xf3, 0x19, 0xda, 0x84, 0x1e, 0x37, 0x2a, 0x8a, 0x46, 0x37, 0x92, 0x46, 0xd6, 0xae, 0xea,
-	0x44, 0xab, 0xd6, 0x9e, 0x37, 0x6b, 0x86, 0x01, 0x5c, 0x42, 0x9c, 0x64, 0x5f, 0xc5, 0x6e, 0xd6,
-	0xcc, 0x6b, 0x49, 0x8f, 0x11, 0x21, 0xc9, 0x59, 0xf8, 0x9d, 0xbb, 0xea, 0x66, 0x19, 0xf4, 0x01,
-	0xea, 0x9c, 0x7e, 0x61, 0x1b, 0x9a, 0xd1, 0xaa, 0x82, 0xf6, 0xb9, 0xd4, 0xa3, 0x78, 0xfd, 0x9f,
-	0x99, 0xcf, 0x79, 0x2e, 0xd9, 0xbb, 0x81, 0x47, 0x72, 0x43, 0x25, 0x87, 0xbe, 0xf7, 0x12, 0xfa,
-	0x7f, 0x33, 0x49, 0x56, 0xfe, 0x11, 0x3a, 0xfb, 0x11, 0x73, 0x25, 0xff, 0xe8, 0xf1, 0xe8, 0x7d,
-	0x03, 0xfd, 0x94, 0xbf, 0xb2, 0xab, 0x3c, 0x89, 0xe9, 0x84, 0xd1, 0xc9, 0x61, 0xbc, 0x94, 0x1a,
-	0x7d, 0x3c, 0x3f, 0x4e, 0xcb, 0x7b, 0x33, 0xf8, 0x5f, 0xb2, 0x11, 0xb2, 0x11, 0x3a, 0xa0, 0x7a,
-	0x3e, 0xa1, 0x0f, 0x62, 0x82, 0x3a, 0x4e, 0x02, 0x83, 0x02, 0x3a, 0xbe, 0x57, 0xf1, 0x45, 0xc7,
-	0xf6, 0x64, 0xba, 0x58, 0xda, 0xd8, 0x49, 0xef, 0xb6, 0x76, 0x86, 0x2e, 0x00, 0x59, 0xf6, 0x11,
-	0xae, 0xa0, 0x06, 0xc0, 0xc8, 0xb2, 0x9c, 0xe4, 0xa5, 0xd3, 0x0a, 0xc9, 0xab, 0xf7, 0x66, 0x7e,
-	0x6b, 0x67, 0x50, 0xf1, 0x55, 0xf5, 0x7d, 0x99, 0xf9, 0xa1, 0x13, 0xdc, 0x99, 0x77, 0x25, 0xf1,
-	0xb0, 0x5f, 0xff, 0x0a, 0x00, 0x00, 0xff, 0xff, 0x00, 0x82, 0x3e, 0xed, 0xe5, 0x05, 0x00, 0x00,
+var fileDescriptor_ons_d69456b88701cf20 = []byte{
+	// 879 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xef, 0x8e, 0xda, 0x46,
+	0x10, 0x8f, 0x21, 0xc0, 0xdd, 0x18, 0xee, 0xcc, 0x1e, 0xb9, 0xfa, 0x5c, 0x29, 0xa2, 0x6e, 0x3e,
+	0xd0, 0x0f, 0xf5, 0xe9, 0x88, 0x7a, 0x6a, 0x1a, 0x45, 0xed, 0x15, 0x5c, 0x44, 0xa5, 0x42, 0xb4,
+	0xd0, 0x53, 0xff, 0x48, 0xb5, 0x1c, 0x76, 0x83, 0x50, 0xa8, 0x4d, 0xd7, 0x2e, 0x09, 0x52, 0xd5,
+	0x17, 0xe9, 0xa7, 0x3e, 0x4e, 0xa5, 0xaa, 0x2f, 0xd1, 0x17, 0xa9, 0xbc, 0xbb, 0xe6, 0xd6, 0x67,
+	0x70, 0x4e, 0x6a, 0x3e, 0xe1, 0xf9, 0xed, 0xcc, 0x6f, 0xe6, 0x37, 0x33, 0x5e, 0x03, 0x87, 0x61,
+	0x10, 0x39, 0x2b, 0x16, 0xc6, 0xa1, 0xfd, 0x1b, 0xd4, 0x47, 0x34, 0x8a, 0x29, 0xf9, 0x6a, 0x41,
+	0x97, 0x24, 0x42, 0x17, 0x50, 0x7d, 0xc9, 0x9f, 0x4c, 0xad, 0x5d, 0xee, 0xe8, 0xdd, 0x33, 0x47,
+	0x3d, 0x76, 0xc4, 0x8f, 0x1b, 0xc4, 0x6c, 0x83, 0xa5, 0xa3, 0xf5, 0x04, 0x74, 0x05, 0x46, 0x06,
+	0x94, 0x5f, 0xd1, 0x8d, 0xa9, 0xb5, 0xb5, 0xce, 0x21, 0x4e, 0x1e, 0x51, 0x0b, 0x2a, 0x6b, 0x7f,
+	0xf9, 0x2b, 0x35, 0x4b, 0x1c, 0x13, 0xc6, 0x67, 0xa5, 0x4f, 0x35, 0xfb, 0xcf, 0x12, 0x34, 0x27,
+	0x94, 0xad, 0x17, 0x33, 0x3a, 0xdd, 0xac, 0xa8, 0xac, 0xe1, 0xf2, 0x56, 0x0d, 0x0f, 0x9d, 0x9c,
+	0xcf, 0xae, 0x42, 0xd0, 0x10, 0x1a, 0x01, 0x2f, 0xd6, 0x93, 0xe1, 0x25, 0x1e, 0xfe, 0x68, 0x47,
+	0xb8, 0x2a, 0x4a, 0x90, 0xd4, 0x03, 0x05, 0xfa, 0x1f, 0x9a, 0xac, 0x11, 0x34, 0x73, 0xec, 0x3b,
+	0x08, 0x3e, 0x54, 0x09, 0xf4, 0x6e, 0x23, 0x53, 0x92, 0xda, 0xa3, 0xbf, 0x35, 0xd0, 0x15, 0x01,
+	0xc8, 0x84, 0x9a, 0x4f, 0x08, 0xa3, 0x51, 0x24, 0xe9, 0x52, 0x13, 0x5d, 0xc2, 0xc1, 0x2c, 0x0c,
+	0x62, 0x1a, 0xc4, 0xa9, 0x74, 0x4b, 0x95, 0xee, 0xf4, 0xe4, 0xa1, 0x10, 0xbc, 0xf5, 0x45, 0x16,
+	0x1c, 0xac, 0x58, 0xb8, 0x5e, 0x10, 0xca, 0xcc, 0x32, 0xa7, 0xdc, 0xda, 0xd6, 0x18, 0x1a, 0x99,
+	0xb0, 0x1d, 0x4a, 0x3a, 0x59, 0x25, 0x28, 0xdf, 0x6e, 0x55, 0xce, 0x3f, 0x1a, 0x54, 0x31, 0x9d,
+	0x85, 0x8c, 0x24, 0x3d, 0x7c, 0xb9, 0xf4, 0xe7, 0x42, 0x47, 0x05, 0x0b, 0x23, 0xd1, 0x17, 0x09,
+	0x02, 0xd9, 0xdb, 0xd4, 0x44, 0xa7, 0x50, 0x65, 0x74, 0x4e, 0xdf, 0xac, 0x64, 0x95, 0xd2, 0x42,
+	0x1f, 0x41, 0x25, 0x8a, 0xfd, 0x98, 0x9a, 0xf7, 0xdb, 0x5a, 0xe7, 0xa8, 0x7b, 0xe2, 0x08, 0x7e,
+	0xf9, 0x33, 0x49, 0x8e, 0xb0, 0xf0, 0xc8, 0x48, 0xad, 0x64, 0xa5, 0xda, 0x9f, 0x80, 0xae, 0x44,
+	0xa0, 0x13, 0x38, 0xc6, 0x6e, 0x6f, 0x8c, 0xfb, 0xde, 0x70, 0x74, 0xd5, 0x9b, 0x0e, 0xaf, 0x5d,
+	0xe3, 0x1e, 0x6a, 0x42, 0x43, 0x82, 0x12, 0xd2, 0xec, 0x7f, 0x35, 0xd0, 0x07, 0x93, 0x8b, 0x5e,
+	0x48, 0x68, 0xdf, 0x8f, 0x7d, 0x74, 0x06, 0x07, 0xf3, 0xe8, 0xc2, 0x9b, 0x85, 0x84, 0xa6, 0x03,
+	0x9a, 0x47, 0xfc, 0x38, 0x39, 0x0a, 0x5f, 0x07, 0x94, 0x79, 0x0b, 0x92, 0x6a, 0xe3, 0xf6, 0x90,
+	0xa0, 0x0f, 0xa0, 0xc6, 0x78, 0xf2, 0xc8, 0x2c, 0xf3, 0xd1, 0xd5, 0x64, 0xf9, 0x38, 0xc5, 0xd1,
+	0x79, 0x56, 0xe6, 0x99, 0xa3, 0x64, 0x4d, 0x9f, 0x55, 0xb1, 0xf6, 0xd7, 0x50, 0x57, 0x61, 0x64,
+	0x08, 0x7b, 0xdc, 0x77, 0xbd, 0xd1, 0x78, 0x94, 0xc8, 0x69, 0x81, 0x91, 0x22, 0x5b, 0x91, 0x1a,
+	0x42, 0x70, 0x94, 0xa2, 0x12, 0x2b, 0xd9, 0x7f, 0xe9, 0x70, 0x36, 0xa1, 0x01, 0x19, 0x8f, 0x26,
+	0x53, 0xe6, 0x07, 0x91, 0x3f, 0x8b, 0x17, 0x61, 0xf0, 0xdc, 0xdf, 0x2c, 0x43, 0x9f, 0xa0, 0xef,
+	0xc0, 0x88, 0x6f, 0x50, 0x2f, 0xde, 0xac, 0x84, 0xf6, 0xa3, 0xee, 0xc7, 0xce, 0xde, 0x28, 0x27,
+	0x8b, 0x26, 0xeb, 0x82, 0x8f, 0xe3, 0x2c, 0x80, 0x28, 0x34, 0x19, 0x9d, 0x2f, 0xa2, 0x98, 0x32,
+	0x6f, 0xdb, 0x56, 0xb1, 0x68, 0x4f, 0x0a, 0xa8, 0xb1, 0x8c, 0x91, 0xfa, 0x15, 0x8f, 0xa4, 0x5b,
+	0xf8, 0x38, 0xe5, 0x1c, 0xc8, 0xc9, 0xbc, 0x82, 0x13, 0x42, 0xf3, 0x89, 0xca, 0x3c, 0xd1, 0xd3,
+	0x82, 0x44, 0xfd, 0x6d, 0xd4, 0x9e, 0x54, 0xcd, 0x1b, 0xde, 0x34, 0x19, 0x06, 0xf0, 0x09, 0xf1,
+	0xc4, 0x5c, 0xf9, 0x34, 0xf5, 0xee, 0xe3, 0x82, 0x1c, 0x57, 0x84, 0x88, 0x5d, 0xb8, 0xcd, 0x7d,
+	0xe8, 0xa7, 0x27, 0xe8, 0x47, 0x68, 0x30, 0xfa, 0x73, 0xb8, 0xa6, 0x29, 0x6d, 0x85, 0xd3, 0x5e,
+	0x16, 0xf6, 0x28, 0xf1, 0xdf, 0xcd, 0x5c, 0x67, 0xca, 0x21, 0xfa, 0x05, 0x1e, 0x6c, 0x7b, 0x23,
+	0x5f, 0x46, 0x31, 0xe3, 0x2a, 0x4f, 0xf2, 0xec, 0x0e, 0x83, 0x50, 0xee, 0x84, 0xdb, 0xb9, 0x4e,
+	0x58, 0xde, 0x07, 0xbd, 0x86, 0xf7, 0x94, 0x81, 0x64, 0x92, 0xd6, 0x78, 0xd2, 0xcf, 0xef, 0x34,
+	0x94, 0x82, 0xb4, 0x0f, 0xc8, 0x2e, 0x2f, 0xeb, 0x29, 0x3c, 0x2c, 0x5e, 0x9e, 0x82, 0x17, 0xdc,
+	0x7a, 0x06, 0xed, 0xb7, 0x2d, 0x44, 0x51, 0xf8, 0x4f, 0xd0, 0xba, 0x19, 0x87, 0x12, 0xf2, 0x8e,
+	0x2e, 0x4a, 0xeb, 0x77, 0x30, 0xf7, 0xed, 0x52, 0xd1, 0xb5, 0x35, 0x48, 0xe8, 0xf8, 0x52, 0x89,
+	0x17, 0xef, 0xbc, 0x70, 0xde, 0xf9, 0xfa, 0xb1, 0x0c, 0xb7, 0x46, 0xf0, 0x7e, 0xc1, 0xd2, 0x15,
+	0x95, 0xd0, 0x82, 0xca, 0x22, 0x20, 0xf4, 0x0d, 0xaf, 0xa0, 0x81, 0x85, 0x61, 0x7d, 0x0b, 0xf6,
+	0xdb, 0xf7, 0x0b, 0x9d, 0x43, 0x3d, 0xb3, 0x3f, 0x1a, 0x17, 0x51, 0x57, 0x3f, 0x53, 0x58, 0x8f,
+	0x94, 0x15, 0xf8, 0x02, 0x1e, 0xdd, 0x65, 0x83, 0xf6, 0x7f, 0x89, 0xed, 0x3f, 0x34, 0x40, 0xf9,
+	0xdb, 0x2d, 0xb9, 0x6e, 0xb1, 0x3b, 0x18, 0x4e, 0xa6, 0x2e, 0xf6, 0xe4, 0x0d, 0x6b, 0xdc, 0x43,
+	0xa7, 0x80, 0xfa, 0x6e, 0x0e, 0xd7, 0xd0, 0x11, 0xc0, 0x55, 0xbf, 0xef, 0x89, 0xef, 0x8d, 0x51,
+	0x12, 0xdf, 0x9e, 0x6f, 0xc6, 0xd7, 0x6e, 0x0a, 0x95, 0x91, 0x09, 0xad, 0x6d, 0xe0, 0xc4, 0xc5,
+	0xd7, 0xc3, 0x9e, 0x3b, 0xfd, 0xfe, 0xb9, 0x6b, 0xdc, 0x47, 0x16, 0x9c, 0x2a, 0xa4, 0xea, 0x59,
+	0xe5, 0xcb, 0xc3, 0x1f, 0x6a, 0x61, 0x10, 0x79, 0xab, 0x17, 0xdd, 0x17, 0x55, 0xfe, 0x2f, 0xf0,
+	0xf1, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xf8, 0x38, 0x89, 0x67, 0x12, 0x0a, 0x00, 0x00,
 }

@@ -16,20 +16,10 @@ var logger *logging.Logger = logging.Get()
 var familyname string = "ons"
 var namespace = Hexdigest(familyname)[:6]
 
-func UnpackPayload(payloadData []byte) (*ons_pb2.SendONSTransactionPayload, error) {
-	payload := &ons_pb2.SendONSTransactionPayload{}
-	err := proto.Unmarshal(payloadData, payload)
-	if err != nil {
-		return nil, &processor.InternalError{
-			Msg: fmt.Sprint("Failed to unmarshal ONSTransaction: %v", err)}
-	}
-	return payload, nil
-}
-
 func UnpackGS1Code(gs1_code_byte_data []byte) (*ons_pb2.GS1CodeData, error) {
 	gs1_code_data := &ons_pb2.GS1CodeData{}
 	err := proto.Unmarshal(gs1_code_byte_data, gs1_code_data)
-	logger.Debugf("unpackGS1Code gs1 code : " +  gs1_code_data.Gs1Code)
+	logger.Debugf("unpackGS1Code gs1 code : " + gs1_code_data.Gs1Code)
 
 	if err != nil {
 		return nil, &processor.InternalError{
@@ -41,7 +31,7 @@ func UnpackGS1Code(gs1_code_byte_data []byte) (*ons_pb2.GS1CodeData, error) {
 func LoadGS1Code(gs1_code string, context *processor.Context) (*ons_pb2.GS1CodeData, error) {
 	//namespac와 gs1 code로 address를 만든다.
 	address := MakeAddress(gs1_code)
-	logger.Debugf("loadGS1Code gs1code: " +  gs1_code + ", address : " + address)
+	logger.Debugf("loadGS1Code gs1code: " + gs1_code + ", address : " + address)
 
 	//address로 state를 읽어 들인다 -> saveGS1Code에서 저장된 data이다.
 	results, err := context.GetState([]string{address})
@@ -79,7 +69,7 @@ func SaveGS1Code(gs1_code_data *ons_pb2.GS1CodeData, context *processor.Context)
 		return &processor.InternalError{Msg: "No addresses in set response"}
 	}
 
-	logger.Debugf("SaveGS1Code gs1code: " +  gs1_code_data.GetGs1Code() + ", address : " + address)
+	logger.Debugf("SaveGS1Code gs1code: " + gs1_code_data.GetGs1Code() + ", address : " + address)
 
 	return nil
 }
@@ -101,7 +91,7 @@ func DeleteGS1Code(gs1_code string, context *processor.Context) error {
 	}
 
 	//return no error -> error is nil...
-	logger.Debugf("DeleteGS1Code gs1code: " +  gs1_code + ", address : " + address)
+	logger.Debugf("DeleteGS1Code gs1code: " + gs1_code + ", address : " + address)
 	return nil
 }
 
@@ -112,18 +102,18 @@ func Hexdigest(str string) string {
 	return strings.ToLower(hex.EncodeToString(hashBytes))
 }
 
-func MakeAddress(gs1_code string) string{
+func MakeAddress(gs1_code string) string {
 	return namespace + Hexdigest(gs1_code)[:64]
 }
 
-func GetNameSapce() string{
-	return namespace;
+func GetNameSapce() string {
+	return namespace
 }
 
-func GetFamilyName() string{
-	return familyname;
+func GetFamilyName() string {
+	return familyname
 }
 
-func GetFamilyVersion() string{
+func GetFamilyVersion() string {
 	return "1.0"
 }

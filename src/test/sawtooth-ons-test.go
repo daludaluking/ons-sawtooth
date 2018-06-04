@@ -11,6 +11,7 @@ import (
 	"sawtooth_sdk/protobuf/transaction_pb2"
 	"sawtooth_sdk/protobuf/batch_pb2"
 	"sawtooth_sdk/signing"
+	"test/ons_query"
 	"strings"
 	"net/http"
 	"bytes"
@@ -27,7 +28,7 @@ var opts struct {
 	Test []bool `short:"t" long:"test" description:"Just for development"`
 	Verbose []bool `short:"v" long:"verbose" description:"Enable verbosity"`
 	GS1Code string `short:"g" long:"gs1code" description:"GS1 code for testing" default:"00800000000000"`
-	Connect string `short:"c" long:"connect" description:"The validator component endpoint to" default:"http://198.13.60.39:8080/batches"`
+	Connect string `short:"c" long:"connect" description:"The validator component endpoint to" default:"http://198.13.60.39:8080"`
 	RandomPrivKey []bool `short:"p" long:"random" description:"Use random private key(default key: $HOME/.sawtooth/key/$USER.priv"`
 	Service string  `short:"s" long:"service" description:"Service field of NAPTR" default:"http://localhost/service.xml"`
 	Regexp string  `short:"e" long:"regexp" description:"Regexp field of NAPTR" default:"!^.*$!http://example.com/cgibin/epcis!"`
@@ -39,12 +40,18 @@ const action_register = "register"
 const action_deregister = "deregister"
 const action_add = "add"
 const action_remove = "remove"
+const action_get = "get"
 
 const (
 	REGISTER_GS1CODE = iota+1
 	DEREGISTER_GS1CODE
 	ADD_RECORD
 	REMOVE_RECORD
+	_
+	_
+	_
+	_
+	GET_GS1CODE_DATA
 )
 
 func IfThenElse(condition bool, a interface{}, b interface{}) interface{} {
@@ -123,6 +130,8 @@ func main() {
 		transaction_type = ADD_RECORD
 	}else if strings.Compare(args[0], action_remove) == 0 {
 		transaction_type = REMOVE_RECORD
+	}else if strings.Compare(args[0], action_get) == 0 {
+		transaction_type = GET_GS1CODE_DATA
 	}
 
 	if is_testing == true || is_verbose == true {
@@ -158,6 +167,10 @@ func main() {
 	case REMOVE_RECORD:
 		payload, tr_err = MakeRemoveRecordPayload(input_gs1_code, opts.RemoveIdx)
 		address = MakeAddressByGS1Code(input_gs1_code)
+	case GET_GS1CODE_DATA:
+		address = MakeAddressByGS1Code(input_gs1_code)
+		ons_query.QueryGS1CodeData(address,opts.Connect, is_verbose)
+		return
 	default:
 		payload, tr_err = MakeRegisterGS1CodePayload(input_gs1_code)
 		address = MakeAddressByGS1Code(input_gs1_code)
@@ -174,7 +187,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	resp, err:= http.Post(opts.Connect, "application/octet-stream", bytes.NewBuffer(batch_list_bytes))
+	resp, err:= http.Post(opts.Connect+"/batches", "application/octet-stream", bytes.NewBuffer(batch_list_bytes))
 	if err != nil {
 		log.Fatal("Fail to send batch list", err)
 		return;
@@ -209,7 +222,7 @@ func MakeSigner(priv_key_str []byte, random_priv_key bool, verify bool) (*signin
 			fmt.Printf("local private key  = %v\n", priv_key_str)
 		}
 
-		fmt.Printf("signer public key  = %v\n", signer.GetPublicKey().AsBytes())
+		fmt.Printf("signer public key  = %v (%s)\n", signer.GetPublicKey().AsBytes(), signer.GetPublicKey().AsHex())
 	
 		message := "sawtooth ons testing program"
 		signature := context.Sign([]byte(message), private_key)

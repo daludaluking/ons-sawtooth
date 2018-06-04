@@ -1,13 +1,13 @@
 package main
 
 import (
+	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"os"
+	ons "sawtooth_ons/handler"
 	"sawtooth_sdk/logging"
 	"sawtooth_sdk/processor"
-	ons "sawtooth_ons/handler"
 	"syscall"
-	"fmt"
 )
 
 var opts struct {
@@ -53,12 +53,12 @@ func main() {
 
 	handler := &ons.ONSHandler{}
 	processor := processor.NewTransactionProcessor(opts.Connect)
-/*
-	processor.SetMaxQueueSize(opts.Queue)
-	if opts.Threads > 0 {
-		processor.SetThreadCount(opts.Threads)
-	}
-*/
+	/*
+		processor.SetMaxQueueSize(opts.Queue)
+		if opts.Threads > 0 {
+			processor.SetThreadCount(opts.Threads)
+		}
+	*/
 	processor.AddHandler(handler)
 	processor.ShutdownOnSignal(syscall.SIGINT, syscall.SIGTERM)
 	err = processor.Start()

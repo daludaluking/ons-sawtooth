@@ -1,6 +1,26 @@
 syntax = "proto3";
 option go_package = "ons_pb2";
 
+message NestedFields {
+    map<string, string> fields = 1;
+}
+
+message ServiceTypeFields {
+    map<string, string> fields = 1;
+    map<string, NestedFields> nested_fields = 2;
+}
+
+message ServiceType {
+    //service_type_address는 transaction process 내부적으로 생성된다.
+    //client에서 저장한 service_type_address는 무시된다.
+    string address = 1;
+    map<string, ServiceTypeFields> contents = 2;
+    //service type을 등록하는 address. (service type 제공자의 public key)
+    //client에서 저장한 public key는 무시되고 transaction을 전송할 때 사용된
+    //public key를 사용한다.
+    string provider = 3;
+}
+
 message Record {
     //uint32 order;
     //uint32 pref;
@@ -67,11 +87,21 @@ message SendONSTransactionPayload {
         uint32 index = 2;
     }
 
+    message RegisterServiceTypeTransactionData {
+        ServiceType service_type = 1;
+    }
+
+    message DeregisterServiceTypeTransactionData {
+        string address = 1;
+    }
+
     enum ONSTransactionType {
         REGISTER_GS1CODE = 0;
         DEREGISTER_GS1CODE = 1;
         ADD_RECORD = 2;
         REMOVE_RECORD = 3;
+        REGISTER_SERVICETYPE = 4;
+        DEREGISTER_SERVICETYPE = 5;
     }
 
     ONSTransactionType transaction_type = 1;
@@ -79,4 +109,6 @@ message SendONSTransactionPayload {
     DeregisterGS1CodeTransactionData deregister_gs1_code = 3;
     AddRecordTransactionData add_record = 4;
     RemoveRecordTransactionData remove_record = 5;
+    RegisterServiceTypeTransactionData register_service_type = 6;
+    DeregisterServiceTypeTransactionData deregister_service_type = 7;
 }
