@@ -1,20 +1,14 @@
 package ons_service
 
 import (
-	"crypto/sha512"
-	"encoding/hex"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"protobuf/ons_pb2"
 	"sawtooth_sdk/processor"
-	//"sawtooth_sdk/protobuf/processor_pb2"
 	"sawtooth_sdk/logging"
-	"strings"
 )
 
 var logger *logging.Logger = logging.Get()
-var familyname string = "service-type"
-var namespace = hexdigest(familyname)[:6]
 
 func UnpackServiceType(service_type_byte_data []byte) (*ons_pb2.ServiceType, error) {
 	service_type_data := &ons_pb2.ServiceType{}
@@ -35,13 +29,15 @@ func LoadServiceType(address string, context *processor.Context) (*ons_pb2.Servi
 	results, err := context.GetState([]string{address})
 
 	if err != nil {
+		logger.Debugf("Failed to LoadServiceType(1): " + address)
 		return nil, err
 	}
 
 	if len(string(results[address])) > 0 {
 		service_type_data, err := UnpackServiceType(results[address])
 		if err != nil {
-			return nil, err
+			logger.Debugf("Failed to LoadServiceType(2): " , address)
+			return nil, &processor.InvalidTransactionError{Msg: "Faied to UnpackServiceType, address: " + address}
 		}
 
 		return service_type_data, nil
@@ -49,11 +45,31 @@ func LoadServiceType(address string, context *processor.Context) (*ons_pb2.Servi
 	return nil, nil
 }
 
+func CheckAddress(address string, context *processor.Context) bool {
+	logger.Debugf("CheckAddress address: " + address)
+
+	//address로 state를 읽어 들인다 -> saveGS1Code에서 저장된 data이다.
+	results, err := context.GetState([]string{address})
+
+	if err != nil {
+		logger.Debugf("Failed to CheckAddress(1): " + address)
+		return false
+	}
+
+	if len(string(results[address])) > 0 {
+		return true
+	}
+
+	return false
+}
+
 func SaveServiceType(address string, service_type_data *ons_pb2.ServiceType, context *processor.Context) error {
 	data, err := proto.Marshal(service_type_data)
 	if err != nil {
-		return &processor.InternalError{Msg: fmt.Sprint("Failed to serialize GS1 Code data:", err)}
+		return &processor.InternalError{Msg: fmt.Sprint("Failed to serialize service type data:", err)}
 	}
+
+	logger.Debugf("data length : %v", len(data))
 
 	addresses, err := context.SetState(map[string][]byte{
 		address: data,
@@ -87,26 +103,4 @@ func DeleteServiceType(address string, context *processor.Context) error {
 	//return no error -> error is nil...
 	logger.Debugf("DeleteServiceType  address : " + address)
 	return nil
-}
-
-func hexdigest(str string) string {
-	hash := sha512.New()
-	hash.Write([]byte(str))
-	hashBytes := hash.Sum(nil)
-	return strings.ToLower(hex.EncodeToString(hashBytes))
-}
-
-func hexdigestbyByte(data []byte) string {
-	hash := sha512.New()
-	hash.Write(data)
-	hashBytes := hash.Sum(nil)
-	return strings.ToLower(hex.EncodeToString(hashBytes))
-}
-
-func MakeAddress(requestor string, service_type *ons_pb2.ServiceType) (string, error) {
-	marshaled_service_type, err := proto.Marshal(service_type)
-	if err != nil {
-		return "", &processor.InternalError{Msg: fmt.Sprint("Failde to marshal service type data in MakeAddress :", err)}
-	}
-	return namespace + hexdigest(requestor)[:4] + hexdigestbyByte(marshaled_service_type)[:60], nil
 }

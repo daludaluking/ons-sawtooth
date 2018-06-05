@@ -43,7 +43,7 @@ func LoadGS1Code(gs1_code string, context *processor.Context) (*ons_pb2.GS1CodeD
 	if len(string(results[address])) > 0 {
 		gs1_code_data, err := UnpackGS1Code(results[address])
 		if err != nil {
-			return nil, err
+			return nil, &processor.InvalidTransactionError{Msg: "Faied to UnpackGS1Code, address: " + address}
 		}
 
 		return gs1_code_data, nil
@@ -57,7 +57,7 @@ func SaveGS1Code(gs1_code_data *ons_pb2.GS1CodeData, context *processor.Context)
 	if err != nil {
 		return &processor.InternalError{Msg: fmt.Sprint("Failed to serialize GS1 Code data:", err)}
 	}
-
+	logger.Debugf("data length : %v", len(data))
 	addresses, err := context.SetState(map[string][]byte{
 		address: data,
 	})
@@ -102,8 +102,8 @@ func Hexdigest(str string) string {
 	return strings.ToLower(hex.EncodeToString(hashBytes))
 }
 
-func MakeAddress(gs1_code string) string {
-	return namespace + Hexdigest(gs1_code)[:64]
+func MakeAddress(address_key string) string {
+	return namespace + Hexdigest(address_key)[:64]
 }
 
 func GetNameSapce() string {

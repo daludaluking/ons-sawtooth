@@ -41,11 +41,7 @@ func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *
 	}
 
 	logger.Debugf("ONS txn %v: type %v", request.Signature, payload.TransactionType)
-/*
-	RegisterServiceType   *SendONSTransactionPayload_RegisterServiceTypeTransactionData   `protobuf:"bytes,6,opt,name=register_service_type,json=registerServiceType" json:"register_service_type,omitempty"`
-	DeregisterServiceType *SendONSTransactionPayload_DeregisterServiceTypeTransactionData `protobuf:"bytes,7,opt,name=deregister_service_type,json=deregisterServiceType" json:"deregister_service_type,omitempty"`
 
-*/
 	switch payload.TransactionType {
 	case ons_pb2.SendONSTransactionPayload_REGISTER_GS1CODE:
 		return applyRegiserGS1Code(payload.RegisterGs1Code, context, requestor_pk)
@@ -65,7 +61,10 @@ func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *
 	}
 }
 
-func applyRegiserGS1Code(registerGS1CodeData *ons_pb2.SendONSTransactionPayload_RegisterGS1CodeTransactionData, context *processor.Context, requestor string) error {
+func applyRegiserGS1Code(
+	registerGS1CodeData *ons_pb2.SendONSTransactionPayload_RegisterGS1CodeTransactionData,
+	context *processor.Context,
+	requestor string) error {
 	gs1_code_data, err := ons_state.LoadGS1Code(registerGS1CodeData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -83,7 +82,10 @@ func applyRegiserGS1Code(registerGS1CodeData *ons_pb2.SendONSTransactionPayload_
 	return ons_state.SaveGS1Code(new_gs1_code, context)
 }
 
-func applyDeregiserGS1Code(deregisterGS1CodeData *ons_pb2.SendONSTransactionPayload_DeregisterGS1CodeTransactionData, context *processor.Context, requestor string) error {
+func applyDeregiserGS1Code(
+	deregisterGS1CodeData *ons_pb2.SendONSTransactionPayload_DeregisterGS1CodeTransactionData,
+	context *processor.Context,
+	requestor string) error {
 	gs1_code_data, err := ons_state.LoadGS1Code(deregisterGS1CodeData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -100,7 +102,10 @@ func applyDeregiserGS1Code(deregisterGS1CodeData *ons_pb2.SendONSTransactionPayl
 	return ons_state.DeleteGS1Code(deregisterGS1CodeData.GetGs1Code(), context)
 }
 
-func applyAddRecord(addRecordData *ons_pb2.SendONSTransactionPayload_AddRecordTransactionData, context *processor.Context, requestor string) error {
+func applyAddRecord(
+	addRecordData *ons_pb2.SendONSTransactionPayload_AddRecordTransactionData,
+	context *processor.Context,
+	requestor string) error {
 	gs1_code_data, err := ons_state.LoadGS1Code(addRecordData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -132,7 +137,10 @@ func applyAddRecord(addRecordData *ons_pb2.SendONSTransactionPayload_AddRecordTr
 	return ons_state.SaveGS1Code(gs1_code_data, context)
 }
 
-func applyRemoveRecord(removeRecordData *ons_pb2.SendONSTransactionPayload_RemoveRecordTransactionData, context *processor.Context, requestor string) error {
+func applyRemoveRecord(
+	removeRecordData *ons_pb2.SendONSTransactionPayload_RemoveRecordTransactionData,
+	context *processor.Context,
+	requestor string) error {
 	gs1_code_data, err := ons_state.LoadGS1Code(removeRecordData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -157,16 +165,17 @@ func applyRemoveRecord(removeRecordData *ons_pb2.SendONSTransactionPayload_Remov
 	return ons_state.SaveGS1Code(gs1_code_data, context)
 }
 
-func applyRegiserServiceType(registerServiceType *ons_pb2.SendONSTransactionPayload_RegisterServiceTypeTransactionData, context *processor.Context, requestor string) error {
-	service_type := registerServiceType.ServiceType
-	address, err := ons_service.MakeAddress(requestor, service_type)
-	if err != nil {
-		return err;
-	}
+func applyRegiserServiceType(
+	registerServiceType *ons_pb2.SendONSTransactionPayload_RegisterServiceTypeTransactionData,
+	context *processor.Context,
+	requestor string) error {
+	//service_type := registerServiceType.ServiceType
+	address := registerServiceType.Address
 
 	tmp_data, err := ons_service.LoadServiceType(address, context)
 
 	if err != nil {
+		logger.Debugf("Failed to LoadServiceType address: " + address)
 		return err;
 	}
 
@@ -174,16 +183,14 @@ func applyRegiserServiceType(registerServiceType *ons_pb2.SendONSTransactionPayl
 		return &processor.InvalidTransactionError{Msg: "The same service type already exists"}
 	}
 
-	//Address와 Provider를 설정한다.
-	service_type.Address = address
-	service_type.Provider = requestor
-
-	return ons_service.SaveServiceType(address, service_type, context)
+	return ons_service.SaveServiceType(address, registerServiceType.ServiceType, context)
 }
 
-func applyDeregiserServiceType(deregisterServiceType *ons_pb2.SendONSTransactionPayload_DeregisterServiceTypeTransactionData, context *processor.Context, requestor string) error {
+func applyDeregiserServiceType(
+	deregisterServiceType *ons_pb2.SendONSTransactionPayload_DeregisterServiceTypeTransactionData,
+	context *processor.Context,
+	requestor string) error {
 	address := deregisterServiceType.Address
-
 	tmp_data, err := ons_service.LoadServiceType(address, context)
 
 	if err != nil {

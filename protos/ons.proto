@@ -1,24 +1,26 @@
 syntax = "proto3";
 option go_package = "ons_pb2";
 
-message NestedFields {
-    map<string, string> fields = 1;
-}
-
-message ServiceTypeFields {
-    map<string, string> fields = 1;
-    map<string, NestedFields> nested_fields = 2;
-}
-
 message ServiceType {
+    message ServiceTypeField {
+        string key = 1;
+        string value =2;
+    }
     //service_type_address는 transaction process 내부적으로 생성된다.
     //client에서 저장한 service_type_address는 무시된다.
     string address = 1;
-    map<string, ServiceTypeFields> contents = 2;
+    /*
+        fields에는 일반적으로 "string(key) : string(value)"의 key value를 저장한다.
+        만약, string(key) : json (value)을 저장이 필요한 경우
+        types에 key_name(fields의 key) : type name(fields의 value, 예를 들어 "json")으로
+        types map에 저장한다.
+    */
+    repeated ServiceTypeField fields = 2;
+    repeated ServiceTypeField types = 3;
     //service type을 등록하는 address. (service type 제공자의 public key)
     //client에서 저장한 public key는 무시되고 transaction을 전송할 때 사용된
     //public key를 사용한다.
-    string provider = 3;
+    string provider = 4;
 }
 
 message Record {
@@ -36,7 +38,7 @@ message Record {
     }
     RecordState state = 4; //0 : inactive, 1 : active
 
-    //record를 등록한 address. (service 제공자) 
+    //record를 등록한 address. (service 제공자)
     string provider = 5;
     //TO-DO : service type과 차후에 추가한다.
     //ServiceType serviceType;
@@ -46,11 +48,11 @@ message Record {
 message GS1CodeData {
     //unique gs1 code string
     string gs1_code = 1;
- 
+
     //unique onwer public key
     string owner_id = 2;
 
-    //records will be slice. 
+    //records will be slice.
     repeated Record records = 3;
 
     enum GS1CodeState {
@@ -88,7 +90,8 @@ message SendONSTransactionPayload {
     }
 
     message RegisterServiceTypeTransactionData {
-        ServiceType service_type = 1;
+        string address = 1;
+        ServiceType service_type = 2;
     }
 
     message DeregisterServiceTypeTransactionData {

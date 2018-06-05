@@ -1,25 +1,29 @@
 package main
 
 import (
-	flags "github.com/jessevdk/go-flags"
 	"os"
 	"crypto/sha512"
 	"encoding/hex"
-	"log"
-	"github.com/golang/protobuf/proto"
-	"protobuf/ons_pb2"
-	"sawtooth_sdk/protobuf/transaction_pb2"
-	"sawtooth_sdk/protobuf/batch_pb2"
-	"sawtooth_sdk/signing"
-	"test/ons_query"
+	"encoding/json"
+	//"encoding/xml"
 	"strings"
 	"net/http"
 	"bytes"
 	"os/user"
 	"fmt"
-	"io/ioutil"
 	"time"
 	"strconv"
+	"log"
+	"io/ioutil"
+	"bufio"
+	"github.com/golang/protobuf/proto"
+	xtoj "github.com/basgys/goxml2json"
+	flags "github.com/jessevdk/go-flags"
+	"protobuf/ons_pb2"
+	"sawtooth_sdk/protobuf/transaction_pb2"
+	"sawtooth_sdk/protobuf/batch_pb2"
+	"sawtooth_sdk/signing"
+	"test/ons_query"
 )
 
 var namespace = hexdigestbyString("ons")[:6]
@@ -34,24 +38,30 @@ var opts struct {
 	Regexp string  `short:"e" long:"regexp" description:"Regexp field of NAPTR" default:"!^.*$!http://example.com/cgibin/epcis!"`
 	Flags rune `short:"f" long:"flags" description:"Flags field of NAPTR (default : u)" default:"117"`
 	RemoveIdx uint32 `short:"r" long:"remove" description:"Index to be removed from records of GS1 code " default:"0"`
+	ServiceTypePath string `short:"x" long:"xml" description:"The service type xml or json file path" default:"./servicetype.xml"`
+	ServieTypeAddress string `short:"a" long:"svcaddr" description:"The address of service type"`
 }
 
 const action_register = "register"
 const action_deregister = "deregister"
 const action_add = "add"
 const action_remove = "remove"
+const action_register_svc = "register_svc"
+const action_deregister_svc = "deregister_svc"
 const action_get = "get"
+const action_get_svc = "get_svc"
 
 const (
 	REGISTER_GS1CODE = iota+1
 	DEREGISTER_GS1CODE
 	ADD_RECORD
 	REMOVE_RECORD
-	_
-	_
+	REGISTER_SVC
+	DEREGISTER_SVC
 	_
 	_
 	GET_GS1CODE_DATA
+	GET_SVC_DATA
 )
 
 func IfThenElse(condition bool, a interface{}, b interface{}) interface{} {
@@ -75,7 +85,7 @@ func main() {
 	}
 
 	var is_testing bool
-	
+
 	switch len(opts.Test) {
 	case 0:
 		is_testing = false
@@ -132,6 +142,12 @@ func main() {
 		transaction_type = REMOVE_RECORD
 	}else if strings.Compare(args[0], action_get) == 0 {
 		transaction_type = GET_GS1CODE_DATA
+	}else if strings.Compare(args[0], action_register_svc) == 0 {
+		transaction_type = REGISTER_SVC
+	}else if strings.Compare(args[0], action_deregister_svc) == 0 {
+		transaction_type = DEREGISTER_SVC
+	}else if strings.Compare(args[0], action_get_svc) == 0 {
+		transaction_type = GET_SVC_DATA
 	}
 
 	if is_testing == true || is_verbose == true {
@@ -169,8 +185,16 @@ func main() {
 		address = MakeAddressByGS1Code(input_gs1_code)
 	case GET_GS1CODE_DATA:
 		address = MakeAddressByGS1Code(input_gs1_code)
-		ons_query.QueryGS1CodeData(address,opts.Connect, is_verbose)
+		ons_query.QueryGS1CodeData(address, opts.Connect, is_verbose)
 		return
+	case GET_SVC_DATA:
+		ons_query.QueryServicTypeData(opts.ServieTypeAddress, opts.Connect, is_verbose)
+		return
+	case REGISTER_SVC:
+		payload, address, tr_err = MakeRegisterServiceTypePayload(opts.ServiceTypePath, signer.GetPublicKey().AsHex(), is_verbose)
+	case DEREGISTER_SVC:
+		payload, tr_err = MakeDeregisterServiceTypePayload(opts.ServieTypeAddress, is_verbose)
+		address = opts.ServieTypeAddress
 	default:
 		payload, tr_err = MakeRegisterGS1CodePayload(input_gs1_code)
 		address = MakeAddressByGS1Code(input_gs1_code)
@@ -223,7 +247,7 @@ func MakeSigner(priv_key_str []byte, random_priv_key bool, verify bool) (*signin
 		}
 
 		fmt.Printf("signer public key  = %v (%s)\n", signer.GetPublicKey().AsBytes(), signer.GetPublicKey().AsHex())
-	
+
 		message := "sawtooth ons testing program"
 		signature := context.Sign([]byte(message), private_key)
 
@@ -241,7 +265,7 @@ func MakeBatchList(transaction_payload *ons_pb2.SendONSTransactionPayload, signe
 	gs1code_reg_payload, err := proto.Marshal(transaction_payload)
 	timestamp := strconv.FormatInt(time.Now().UnixNano(), 16)
 	if err != nil {
-		log.Fatal("Failed to marshal GS1 Code data:", err)
+		log.Fatal("Failed to marshal transaction payload:", err)
 		return nil, err
 	}
 
@@ -353,6 +377,33 @@ func MakeRemoveRecordPayload(gs1_code string, remove_idx uint32) (*ons_pb2.SendO
 	return remove_record_payload, nil
 }
 
+func MakeRegisterServiceTypePayload(file_path string, requestor string, verbose bool) (*ons_pb2.SendONSTransactionPayload, string, error) {
+	service_type, address, err := GenerateServiceType(file_path, requestor, verbose)
+	if err != nil {
+		log.Fatal("Failed to GenerateServiceType :", err)
+		return nil, "", err
+	}
+
+	register_service_type_payload := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_REGISTER_SERVICETYPE,
+		RegisterServiceType: &ons_pb2.SendONSTransactionPayload_RegisterServiceTypeTransactionData {
+			Address: address,
+			ServiceType: service_type,
+		},
+	}
+	return register_service_type_payload, address, nil
+}
+
+func MakeDeregisterServiceTypePayload(address string, verbose bool) (*ons_pb2.SendONSTransactionPayload, error) {
+	deregister_service_type_payload := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_DEREGISTER_SERVICETYPE,
+		DeregisterServiceType: &ons_pb2.SendONSTransactionPayload_DeregisterServiceTypeTransactionData {
+			Address: address,
+		},
+	}
+	return deregister_service_type_payload, nil
+}
+
 func hexdigestbyString(str string) string {
 	hash := sha512.New()
 	hash.Write([]byte(str))
@@ -369,4 +420,141 @@ func hexdigestbyByte(data []byte) string {
 
 func MakeAddressByGS1Code(gs1_code string) string{
 	return namespace + hexdigestbyString(gs1_code)[:64]
+}
+
+func MakeAddressByServiceType(requestor string, service_type *ons_pb2.ServiceType) (string, error) {
+	marshaled_service_type, err := proto.Marshal(service_type)
+	if err != nil {
+		return "", err
+	}
+	return namespace + hexdigestbyString("service-type")[:8] + hexdigestbyString(requestor)[:16] + hexdigestbyByte(marshaled_service_type)[:40], nil
+}
+
+func CheckXmlFileType(out *os.File) bool {
+    // Only the first 512 bytes are used to sniff the content type.
+    buffer := make([]byte, 512)
+
+    _, err := out.Read(buffer)
+    if err != nil {
+        return false
+    }
+
+    // Use the net/http package's handy DectectContentType function. Always returns a valid
+    // content-type by returning "application/octet-stream" if no others seemed to match.
+	contentType := http.DetectContentType(buffer)
+
+	if strings.Index(strings.ToLower(contentType), "xml") != -1 {
+		fmt.Println(contentType)
+		return true
+	}
+
+    return false
+}
+
+func GenerateServiceType(file_path string, requestor string, verbose bool) (*ons_pb2.ServiceType, string, error) {
+	var fields map[string]interface{}
+	var json_raw_data []byte
+	//tr_fields, tr_type은 transaction으로 전달하는 json을 만들기 위한 변수임.
+	tr_fields := []*ons_pb2.ServiceType_ServiceTypeField{}
+	tr_types  := []*ons_pb2.ServiceType_ServiceTypeField{}
+
+	f, err := os.Open(file_path)
+    if err != nil {
+		fmt.Println("os.Open error : ", err)
+		return nil, "", err
+    }
+    defer f.Close()
+
+	if CheckXmlFileType(f) == true {
+		_, err := f.Seek(0, 0)
+		if err != nil {
+			fmt.Println("file seek error : ", err)
+			return nil, "", err
+		}
+
+		r := bufio.NewReader(f)
+		js, err := xtoj.Convert(r)
+		if err != nil {
+			fmt.Println("xtoj.Convert error : ", err)
+			return nil, "", err
+		}
+		json_raw_data = js.Bytes()
+	}else{
+		if verbose == true {
+			fmt.Printf("%s type isn't xml, so directly make json object from the file\n", file_path)
+		}
+		var err error
+		json_raw_data, err = ioutil.ReadFile(file_path)
+		if err != nil {
+			fmt.Printf("ioutil.ReadFile error : %v\n", err)
+			return nil, "", err
+		}
+	}
+
+	if verbose == true {
+		fmt.Println(string(json_raw_data))
+	}
+
+	err = json.Unmarshal(json_raw_data, &fields)
+	if err != nil {
+		fmt.Printf("json.Unmarshal error : %v\n", err)
+		return nil, "", err
+	}
+
+	for k, v := range fields {
+		switch vv := v.(type) {
+		case map[string]interface{}:
+			if k == "ServiceType" {
+				for _k, _v := range vv {
+					switch _vv := _v.(type) {
+					case string:
+						new_field := &ons_pb2.ServiceType_ServiceTypeField{
+							Key: strings.Trim(_k, "-"),
+							Value: _vv,
+						}
+						tr_fields = append(tr_fields, new_field)
+					default:
+						_tmp_json, err := json.Marshal(_vv)
+						if err == nil {
+							tmp_key := strings.Trim(_k, "-")
+							new_field := &ons_pb2.ServiceType_ServiceTypeField{
+								Key: tmp_key,
+								Value: string(_tmp_json),
+							}
+							new_type := &ons_pb2.ServiceType_ServiceTypeField{
+								Key: tmp_key,
+								Value: "json",
+							}
+							tr_fields = append(tr_fields, new_field)
+							tr_types = append(tr_types, new_type)
+						}else{
+							fmt.Printf("Failed to json marshal from %s key's value(%s), so it will be skipped: error : %v\n",
+									_k, _vv, err)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if verbose == true {
+		fmt.Println("tr_fields \n", tr_fields)
+		fmt.Println("tr_type \n", tr_types)
+	}
+
+	svc_type := &ons_pb2.ServiceType {
+		Fields: tr_fields,
+		Types: tr_types,
+	}
+
+	address, err := MakeAddressByServiceType(requestor, svc_type)
+	if err != nil {
+		fmt.Printf("error : %v\n", err)
+		return nil, "", err
+	}
+
+	svc_type.Address = address
+	svc_type.Provider = requestor
+
+	return svc_type, address, nil
 }

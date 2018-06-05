@@ -32,8 +32,8 @@ import (
 	"fmt"
 )
 
-func QueryGS1CodeData(gs1_code_address string, url string, verbose bool) (*ons_pb2.GS1CodeData, error) {
-	get_url := url + "/state/" + gs1_code_address
+func GetRawData(address string, url string, verbose bool) ([]byte, error) {
+	get_url := url + "/state/" + address
 
 	if verbose == true {
 		fmt.Println("query : " + get_url)
@@ -63,7 +63,7 @@ func QueryGS1CodeData(gs1_code_address string, url string, verbose bool) (*ons_p
 		fmt.Printf("readed data : %s\n", string(data))
 	}
 
-	//data is json format...
+		//data is json format...
 	//var json_data map[string]string
 	var json_data map[string]interface{}
 	if err := json.Unmarshal(data, &json_data); err != nil {
@@ -95,6 +95,44 @@ func QueryGS1CodeData(gs1_code_address string, url string, verbose bool) (*ons_p
 		fmt.Printf("protobuf marshaled data : %q\n", pb2_data)
 	}
 
+	return pb2_data, nil
+}
+
+func PrintPrettyJson(pb proto.Message, verbose bool) error {
+	m := &jsonpb.Marshaler{}
+	json_string, err := m.MarshalToString(pb)
+	if err != nil {
+		fmt.Printf("Fail to convert proto.Message to json string: %v\n", err)
+		return err
+	}
+
+	if verbose == true {
+		fmt.Printf("json : %v\n", json_string)
+	}
+
+	var dat map[string] interface{}
+    if err := json.Unmarshal([]byte(json_string), &dat); err != nil {
+		fmt.Printf("PrintPrettyJson : json.Unmarshal : error %v\n", err);
+		return err
+	}
+
+	b, err := json.MarshalIndent(dat, "", "  ")
+    if err != nil {
+		fmt.Printf("PrintPrettyJson : json.MarshalIndent : error %v\n", err);
+		return err
+	}
+
+    b2 := append(b, '\n')
+	fmt.Printf(string(b2))
+	return nil
+}
+
+func QueryGS1CodeData(gs1_code_address string, url string, verbose bool) (*ons_pb2.GS1CodeData, error) {
+	pb2_data, err := GetRawData(gs1_code_address, url, verbose)
+	if err != nil {
+		return nil, err
+	}
+
 	gs1_code_data := &ons_pb2.GS1CodeData{}
 	err = proto.Unmarshal(pb2_data, gs1_code_data)
 	if err != nil {
@@ -106,20 +144,29 @@ func QueryGS1CodeData(gs1_code_address string, url string, verbose bool) (*ons_p
 		fmt.Printf("protobuf unmarshaled data : %v\n", gs1_code_data)
 	}
 
-	m := &jsonpb.Marshaler{}
-	gs1_code_data_string, err := m.MarshalToString(gs1_code_data)
+	_ = PrintPrettyJson(gs1_code_data, verbose)
+
+	return gs1_code_data, nil
+}
+
+func QueryServicTypeData(gs1_code_address string, url string, verbose bool) (*ons_pb2.ServiceType, error) {
+	pb2_data, err := GetRawData(gs1_code_address, url, verbose)
 	if err != nil {
-		fmt.Printf("Fail to convert GS1 code data to json string: %v\n", err)
+		return nil, err
+	}
+
+	svc_type_data := &ons_pb2.ServiceType{}
+	err = proto.Unmarshal(pb2_data, svc_type_data)
+	if err != nil {
+		fmt.Printf("Fail to unmarshal service type data : %v\n", err)
 		return nil, err
 	}
 
 	if verbose == true {
-		fmt.Printf("gs1 code data : %v\n", gs1_code_data_string)
+		fmt.Printf("protobuf unmarshaled data : %v\n", svc_type_data)
 	}
 
-	pretty_formatted_data, err := json.MarshalIndent(gs1_code_data, "", "  ")
-	if err == nil {
-			fmt.Println("formatted : \n", string(pretty_formatted_data))
-	}
-	return gs1_code_data, nil
+	_ = PrintPrettyJson(svc_type_data, verbose)
+
+	return svc_type_data, nil
 }
