@@ -55,6 +55,10 @@ func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *
 		return applyRegiserServiceType(payload.RegisterServiceType, context, requestor_pk)
 	case ons_pb2.SendONSTransactionPayload_DEREGISTER_SERVICETYPE:
 		return applyDeregiserServiceType(payload.DeregisterServiceType, context, requestor_pk)
+	case ons_pb2.SendONSTransactionPayload_CHANGE_GS1CODE_STATE:
+		return applyChangeGS1CodeState(payload.ChangeGs1CodeState, context, requestor_pk)
+	case ons_pb2.SendONSTransactionPayload_CHANGE_RECORD_STATE:
+		return applyChangeRecordState(payload.ChangeRecordState, context, requestor_pk)
 	default:
 		return &processor.InvalidTransactionError{
 			Msg: fmt.Sprintf("Invalid TransactionType: '%v'", payload.TransactionType)}
@@ -77,6 +81,7 @@ func applyRegiserGS1Code(
 	new_gs1_code := &ons_pb2.GS1CodeData{
 		Gs1Code: registerGS1CodeData.GetGs1Code(),
 		OwnerId: requestor,
+		State: ons_pb2.GS1CodeData_GS1CODE_INACTIVE,
 	}
 
 	return ons_state.SaveGS1Code(new_gs1_code, context)
@@ -206,6 +211,51 @@ func applyDeregiserServiceType(
 	}
 
 	return ons_service.DeleteServiceType(address, context)
+}
+
+func applyChangeGS1CodeState(
+	changeGS1CodeState *ons_pb2.SendONSTransactionPayload_ChangeGS1CodeStateTransactionData,
+	context *processor.Context,
+	requestor string) error {
+	gs1_code_data, err := ons_state.LoadGS1Code(changeGS1CodeState.GetGs1Code(), context)
+	if err != nil {
+		return err
+	}
+
+	if gs1_code_data == nil {
+		return &processor.InvalidTransactionError{Msg: "GS1 Code doesn't exist"}
+	}
+
+	gs1_code_data.State = changeGS1CodeState.GetState()
+
+	return ons_state.SaveGS1Code(gs1_code_data, context)
+}
+
+func applyChangeRecordState(
+	changeRecordState *ons_pb2.SendONSTransactionPayload_ChangeRecordStateTransactionData,
+	context *processor.Context,
+	requestor string) error {
+	gs1_code_data, err := ons_state.LoadGS1Code(changeRecordState.GetGs1Code(), context)
+	if err != nil {
+		return err
+	}
+
+	if gs1_code_data == nil {
+		return &processor.InvalidTransactionError{Msg: "GS1 Code doesn't exist"}
+	}
+
+	idx := changeRecordState.GetIndex()
+	record_len := uint32(len(gs1_code_data.Records))
+
+	//permissino check??
+	//ons_pb2.SendONSTransactionPayload_RecordTranactionData
+	//ons_pb2.Record
+	if record_len <= idx {
+		return &processor.InvalidTransactionError{Msg: "Invalid index: " + string(idx) + ", record count: " + string(record_len)}
+	}
+
+	gs1_code_data.Records[idx].State = changeRecordState.GetState()
+	return ons_state.SaveGS1Code(gs1_code_data, context)
 }
 
 func UnpackPayload(payloadData []byte) (*ons_pb2.SendONSTransactionPayload, error) {

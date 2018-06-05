@@ -29,7 +29,7 @@ import (
 var namespace = hexdigestbyString("ons")[:6]
 
 var opts struct {
-	Test []bool `short:"t" long:"test" description:"Just for development"`
+	Test []bool `long:"test" description:"Just for development"`
 	Verbose []bool `short:"v" long:"verbose" description:"Enable verbosity"`
 	GS1Code string `short:"g" long:"gs1code" description:"GS1 code for testing" default:"00800000000000"`
 	Connect string `short:"c" long:"connect" description:"The validator component endpoint to" default:"http://198.13.60.39:8080"`
@@ -37,9 +37,10 @@ var opts struct {
 	Service string  `short:"s" long:"service" description:"Service field of NAPTR" default:"http://localhost/service.xml"`
 	Regexp string  `short:"e" long:"regexp" description:"Regexp field of NAPTR" default:"!^.*$!http://example.com/cgibin/epcis!"`
 	Flags rune `short:"f" long:"flags" description:"Flags field of NAPTR (default : u)" default:"117"`
-	RemoveIdx uint32 `short:"r" long:"remove" description:"Index to be removed from records of GS1 code " default:"0"`
+	RecordIdx uint32 `short:"r" long:"recordidx" description:"The index of GS1 code's records" default:"0"`
 	ServiceTypePath string `short:"x" long:"xml" description:"The service type xml or json file path" default:"./servicetype.xml"`
 	ServieTypeAddress string `short:"a" long:"svcaddr" description:"The address of service type"`
+	State int32 `short:"t" long:"state" description:"The state of GS1 code or record" default:"1"`
 }
 
 const action_register = "register"
@@ -50,6 +51,8 @@ const action_register_svc = "register_svc"
 const action_deregister_svc = "deregister_svc"
 const action_get = "get"
 const action_get_svc = "get_svc"
+const action_change_gstate = "change_gstate"
+const action_change_rstate = "change_rstate"
 
 const (
 	REGISTER_GS1CODE = iota+1
@@ -58,6 +61,8 @@ const (
 	REMOVE_RECORD
 	REGISTER_SVC
 	DEREGISTER_SVC
+	CHANGE_GSTATE
+	CHANGE_RSTATE
 	_
 	_
 	GET_GS1CODE_DATA
@@ -120,6 +125,7 @@ func main() {
 
 	input_gs1_code := opts.GS1Code
 	var local_private_key []byte
+	var local_public_key []byte
 	user, err := user.Current()
 	if is_use_random_priv_key == false {
 		local_private_key, err = ioutil.ReadFile(user.HomeDir+"/.sawtooth/keys/"+user.Username+".priv")
@@ -127,8 +133,21 @@ func main() {
 			fmt.Println("Fail to read private key.")
 			os.Exit(2)
 		}
-	}else{
+		if local_private_key[len(local_private_key)-1] == 10 {
+			local_private_key = local_private_key[:len(local_private_key)-1]
+		}
+
+		local_private_key, _ = hex.DecodeString(string(local_private_key))
+
+		if is_verbose == true {
+			fmt.Printf("local private key : %v\n", local_private_key)
+		}
+
+		local_public_key = nil
+
+		}else{
 		local_private_key = nil
+		local_public_key = nil
 	}
 
 	var transaction_type int32
@@ -148,6 +167,10 @@ func main() {
 		transaction_type = DEREGISTER_SVC
 	}else if strings.Compare(args[0], action_get_svc) == 0 {
 		transaction_type = GET_SVC_DATA
+	}else if strings.Compare(args[0], action_change_gstate) == 0 {
+		transaction_type = CHANGE_GSTATE
+	}else if strings.Compare(args[0], action_change_rstate) == 0 {
+		transaction_type = CHANGE_RSTATE
 	}
 
 	if is_testing == true || is_verbose == true {
@@ -156,7 +179,8 @@ func main() {
 		fmt.Printf("Service = %v\n", opts.Service)
 		fmt.Printf("Regexp = %v\n", opts.Regexp)
 		fmt.Printf("Flags = %c\n", opts.Flags)
-		fmt.Printf("RemoveIdx = %v\n", opts.RemoveIdx)
+		fmt.Printf("RecordIdx = %v\n", opts.RecordIdx)
+		fmt.Printf("State : %d\n", opts.State)
 		fmt.Printf("Test = %v\n", opts.Test)
 		fmt.Printf("endpoint = %v\n", opts.Connect)
 		fmt.Printf("remaining args = %v\n", args)
@@ -165,7 +189,7 @@ func main() {
 		fmt.Printf("transaction type = %v\n", transaction_type)
 	}
 
-	signer := MakeSigner(local_private_key, is_use_random_priv_key, is_testing || is_verbose)
+	signer := MakeSigner(local_private_key, local_public_key, is_use_random_priv_key, is_testing || is_verbose)
 
 	var address string
 	var payload *ons_pb2.SendONSTransactionPayload
@@ -181,7 +205,7 @@ func main() {
 		payload, tr_err = MakeAddRecordPayload(input_gs1_code, opts.Flags, opts.Service, opts.Regexp)
 		address = MakeAddressByGS1Code(input_gs1_code)
 	case REMOVE_RECORD:
-		payload, tr_err = MakeRemoveRecordPayload(input_gs1_code, opts.RemoveIdx)
+		payload, tr_err = MakeRemoveRecordPayload(input_gs1_code, opts.RecordIdx)
 		address = MakeAddressByGS1Code(input_gs1_code)
 	case GET_GS1CODE_DATA:
 		address = MakeAddressByGS1Code(input_gs1_code)
@@ -195,6 +219,12 @@ func main() {
 	case DEREGISTER_SVC:
 		payload, tr_err = MakeDeregisterServiceTypePayload(opts.ServieTypeAddress, is_verbose)
 		address = opts.ServieTypeAddress
+	case CHANGE_GSTATE:
+		payload, tr_err = MakeChangeGStatePayload(input_gs1_code, opts.State)
+		address = MakeAddressByGS1Code(input_gs1_code)
+	case CHANGE_RSTATE:
+		payload, tr_err = MakeChangeRStatePayload(input_gs1_code, opts.RecordIdx, opts.State)
+		address = MakeAddressByGS1Code(input_gs1_code)
 	default:
 		payload, tr_err = MakeRegisterGS1CodePayload(input_gs1_code)
 		address = MakeAddressByGS1Code(input_gs1_code)
@@ -227,7 +257,7 @@ func main() {
 	}
 }
 
-func MakeSigner(priv_key_str []byte, random_priv_key bool, verify bool) (*signing.Signer) {
+func MakeSigner(priv_key_str []byte, public_key_str []byte, random_priv_key bool, verify bool) (*signing.Signer) {
 	context := signing.CreateContext("secp256k1")
 	var private_key signing.PrivateKey
 	if random_priv_key == true {
@@ -239,19 +269,26 @@ func MakeSigner(priv_key_str []byte, random_priv_key bool, verify bool) (*signin
 	crypto_factory := signing.NewCryptoFactory(context)
 	signer := crypto_factory.NewSigner(private_key)
 
+	var public_key signing.PublicKey
+	if public_key_str == nil {
+		public_key = signer.GetPublicKey()
+	}else{
+		public_key = signing.NewSecp256k1PublicKey(public_key_str)
+	}
+
 	if verify == true {
 		if random_priv_key == true {
 			fmt.Printf("random private key = %v\n", private_key.AsBytes())
 		}else{
-			fmt.Printf("local private key  = %v\n", priv_key_str)
+			fmt.Printf("local private key  = %v (%s)\n", priv_key_str, string(priv_key_str))
 		}
 
-		fmt.Printf("signer public key  = %v (%s)\n", signer.GetPublicKey().AsBytes(), signer.GetPublicKey().AsHex())
+		fmt.Printf("signer public key  = %v %v\n", public_key.AsBytes(), public_key.AsHex())
 
 		message := "sawtooth ons testing program"
 		signature := context.Sign([]byte(message), private_key)
 
-		if context.Verify(signature, []byte(message), signer.GetPublicKey()) == true {
+		if context.Verify(signature, []byte(message), public_key) == true {
 			fmt.Println("Verify key pair : OK")
 		}else{
 			fmt.Println("Verify key pair : NOT OK")
@@ -402,6 +439,29 @@ func MakeDeregisterServiceTypePayload(address string, verbose bool) (*ons_pb2.Se
 		},
 	}
 	return deregister_service_type_payload, nil
+}
+
+func MakeChangeGStatePayload(gs1_code string, state int32) (*ons_pb2.SendONSTransactionPayload, error){
+	change_gs1_code_state_payload := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_CHANGE_GS1CODE_STATE,
+		ChangeGs1CodeState: &ons_pb2.SendONSTransactionPayload_ChangeGS1CodeStateTransactionData {
+			Gs1Code : gs1_code,
+			State: ons_pb2.GS1CodeData_GS1CodeState(state),
+		},
+	}
+	return change_gs1_code_state_payload, nil
+}
+
+func MakeChangeRStatePayload(gs1_code string, record_idx uint32, state int32) (*ons_pb2.SendONSTransactionPayload, error){
+	change_record_state_payload := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_CHANGE_RECORD_STATE,
+		ChangeRecordState: &ons_pb2.SendONSTransactionPayload_ChangeRecordStateTransactionData {
+			Gs1Code : gs1_code,
+			Index: record_idx,
+			State: ons_pb2.Record_RecordState(state),
+		},
+	}
+	return change_record_state_payload, nil
 }
 
 func hexdigestbyString(str string) string {

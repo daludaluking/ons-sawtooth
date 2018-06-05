@@ -7,7 +7,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"protobuf/ons_pb2"
 	"sawtooth_sdk/processor"
-	//"sawtooth_sdk/protobuf/processor_pb2"
 	"sawtooth_sdk/logging"
 	"strings"
 )

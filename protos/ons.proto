@@ -98,6 +98,18 @@ message SendONSTransactionPayload {
         string address = 1;
     }
 
+    message ChangeGS1CodeStateTransactionData {
+        string gs1_code = 1;
+        GS1CodeData.GS1CodeState state = 2;
+    }
+
+    message ChangeRecordStateTransactionData {
+        string gs1_code = 1;
+        //record index
+        uint32 index = 2;
+        Record.RecordState state = 3;
+    }
+
     enum ONSTransactionType {
         REGISTER_GS1CODE = 0;
         DEREGISTER_GS1CODE = 1;
@@ -105,6 +117,8 @@ message SendONSTransactionPayload {
         REMOVE_RECORD = 3;
         REGISTER_SERVICETYPE = 4;
         DEREGISTER_SERVICETYPE = 5;
+        CHANGE_GS1CODE_STATE = 6;
+        CHANGE_RECORD_STATE = 7;
     }
 
     ONSTransactionType transaction_type = 1;
@@ -114,4 +128,6 @@ message SendONSTransactionPayload {
     RemoveRecordTransactionData remove_record = 5;
     RegisterServiceTypeTransactionData register_service_type = 6;
     DeregisterServiceTypeTransactionData deregister_service_type = 7;
+    ChangeGS1CodeStateTransactionData change_gs1_code_state = 8;
+    ChangeRecordStateTransactionData change_record_state = 9;
 }
