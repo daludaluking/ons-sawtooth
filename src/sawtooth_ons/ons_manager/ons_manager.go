@@ -9,7 +9,7 @@ import (
 	"sawtooth_ons/ons_state"
 )
 
-type Permission int
+type Permission int32
 
 const (
 	PERMISSION_SU_ADDRESS Permission = iota+1
@@ -58,6 +58,7 @@ func LoadONSManager(context *processor.Context) (*ons_pb2.ONSManager, error) {
 	address := getONSManagerAddress()
 	results, err := context.GetState([]string{address})
 	if err != nil {
+		logger.Debugf("LoadONSManager: address %v, error : %v", address, err)
 		return nil, err
 	}
 

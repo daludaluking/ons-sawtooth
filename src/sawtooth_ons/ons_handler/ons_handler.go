@@ -80,8 +80,12 @@ func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *
 
 func applyRegiserGS1Code(
 	registerGS1CodeData *ons_pb2.SendONSTransactionPayload_RegisterGS1CodeTransactionData,
-	context *processor.Context,
-	requestor string) error {
+	context *processor.Context,	requestor string) error {
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyRegiserGS1Code : Authentication failed"}
+	}
+
 	gs1_code_data, err := ons_state.LoadGS1Code(registerGS1CodeData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -104,6 +108,11 @@ func applyDeregiserGS1Code(
 	deregisterGS1CodeData *ons_pb2.SendONSTransactionPayload_DeregisterGS1CodeTransactionData,
 	context *processor.Context,
 	requestor string) error {
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyDeregiserGS1Code : Authentication failed"}
+	}
+
 	gs1_code_data, err := ons_state.LoadGS1Code(deregisterGS1CodeData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -124,6 +133,11 @@ func applyAddRecord(
 	addRecordData *ons_pb2.SendONSTransactionPayload_AddRecordTransactionData,
 	context *processor.Context,
 	requestor string) error {
+	//permission check...
+	if GetPermissionLevel(addRecordData.GetGs1Code(), requestor, ons_manager.PERMISSION_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyAddRecord : Authentication failed"}
+	}
+
 	gs1_code_data, err := ons_state.LoadGS1Code(addRecordData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -159,6 +173,11 @@ func applyRemoveRecord(
 	removeRecordData *ons_pb2.SendONSTransactionPayload_RemoveRecordTransactionData,
 	context *processor.Context,
 	requestor string) error {
+	//permission check...
+	if GetPermissionLevel(removeRecordData.GetGs1Code(), requestor, ons_manager.PERMISSION_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyRemoveRecord : Authentication failed"}
+	}
+
 	gs1_code_data, err := ons_state.LoadGS1Code(removeRecordData.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -172,8 +191,10 @@ func applyRemoveRecord(
 	record_len := uint32(len(gs1_code_data.Records))
 
 	//permissino check??
-	//ons_pb2.SendONSTransactionPayload_RecordTranactionData
-	//ons_pb2.Record
+	if gs1_code_data.Records[idx].Provider != requestor {
+		return &processor.InvalidTransactionError{Msg: "applyRemoveRecord : mismatch provider address"}
+	}
+
 	if record_len <= idx {
 		return &processor.InvalidTransactionError{Msg: "Invalid index: " + string(idx) + ", record count: " + string(record_len)}
 	}
@@ -187,6 +208,11 @@ func applyRegiserServiceType(
 	registerServiceType *ons_pb2.SendONSTransactionPayload_RegisterServiceTypeTransactionData,
 	context *processor.Context,
 	requestor string) error {
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyRegiserServiceType : Authentication failed"}
+	}
+
 	//service_type := registerServiceType.ServiceType
 	address := registerServiceType.Address
 
@@ -208,6 +234,11 @@ func applyDeregiserServiceType(
 	deregisterServiceType *ons_pb2.SendONSTransactionPayload_DeregisterServiceTypeTransactionData,
 	context *processor.Context,
 	requestor string) error {
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyDeregiserServiceType : Authentication failed"}
+	}
+
 	address := deregisterServiceType.Address
 	tmp_data, err := ons_service.LoadServiceType(address, context)
 
@@ -230,6 +261,11 @@ func applyChangeGS1CodeState(
 	changeGS1CodeState *ons_pb2.SendONSTransactionPayload_ChangeGS1CodeStateTransactionData,
 	context *processor.Context,
 	requestor string) error {
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyChangeGS1CodeState : Authentication failed"}
+	}
+
 	gs1_code_data, err := ons_state.LoadGS1Code(changeGS1CodeState.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -248,6 +284,11 @@ func applyChangeRecordState(
 	changeRecordState *ons_pb2.SendONSTransactionPayload_ChangeRecordStateTransactionData,
 	context *processor.Context,
 	requestor string) error {
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyChangeRecordState : Authentication failed"}
+	}
+
 	gs1_code_data, err := ons_state.LoadGS1Code(changeRecordState.GetGs1Code(), context)
 	if err != nil {
 		return err
@@ -276,22 +317,15 @@ func applyAddManager(
 	context *processor.Context,
 	requestor string) error {
 
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyChangeRecordState : Authentication failed"}
+	}
+
 	//just for test...
 	if addManagerData.GetGs1Code() == "0" {
 		logger.Debugf("Delete manager global state")
 		return ons_manager.DeleteAllManager(context)
-	}
-
-	permission, err:= ons_manager.CheckPermission(addManagerData.GetGs1Code(), requestor, context)
-
-	if err != nil {
-		logger.Debugf("Failed to check permission")
-		return err
-	}
-
-	//SU Address거나 SU Manager만 등록이 가능.
-	if permission == ons_manager.PERMISSION_NONE || permission == ons_manager.PERMISSION_MANAGER {
-		return &processor.InvalidTransactionError{Msg: "applyAddManager : Authentication failed"}
 	}
 
 	//GS1Code Manager의 경우에는 권한이 SU Address거나 SU Manager, 또는 gs1 code manager 자신의 경우에는
@@ -303,17 +337,9 @@ func applyRemoveManager(
 	removeManagerData *ons_pb2.SendONSTransactionPayload_RemoveManagerTransactionData,
 	context *processor.Context,
 	requestor string) error {
-
-	permission, err:= ons_manager.CheckPermission(removeManagerData.GetGs1Code(), requestor, context)
-
-	if err != nil {
-		logger.Debugf("Failed to check permission")
-		return err
-	}
-
-	//SU Address거나 SU Manager만 등록이 가능.
-	if permission == ons_manager.PERMISSION_NONE || permission == ons_manager.PERMISSION_MANAGER {
-		return &processor.InvalidTransactionError{Msg: "applyRemoveManager : Authentication failed"}
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_MANAGER, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyChangeRecordState : Authentication failed"}
 	}
 
 	//GS1Code Manager의 경우에는 권한이 SU Address거나 SU Manager의 경우에는
@@ -325,17 +351,9 @@ func applyAddSuManager(
 	addSuManagerData *ons_pb2.SendONSTransactionPayload_AddSUManagerTransactionData,
 	context *processor.Context,
 	requestor string) error {
-
-	permission, err:= ons_manager.CheckPermission("", requestor, context)
-
-	if err != nil {
-		logger.Debugf("Failed to check permission")
-		return err
-	}
-
-	//SU Address만 등록이 가능
-	if permission != ons_manager.PERMISSION_SU_ADDRESS {
-		return &processor.InvalidTransactionError{Msg: "applyAddManager : Authentication failed"}
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_ADDRESS, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyChangeRecordState : Authentication failed"}
 	}
 
 	return ons_manager.AddSuManager(addSuManagerData.GetAddress(), requestor, context)
@@ -345,24 +363,15 @@ func applyRemoveSuManager(
 	removeSuManagerData *ons_pb2.SendONSTransactionPayload_RemoveSUManagerTransactionData,
 	context *processor.Context,
 	requestor string) error {
-
-	permission, err:= ons_manager.CheckPermission("", requestor, context)
-
-	if err != nil {
-		logger.Debugf("Failed to check permission")
-		return err
-	}
-
-	//SU Address거나 SU Manager만 등록이 가능.
-	if permission != ons_manager.PERMISSION_SU_ADDRESS {
-		return &processor.InvalidTransactionError{Msg: "applyAddManager : Authentication failed"}
+	//permission check...
+	if GetPermissionLevel("", requestor, ons_manager.PERMISSION_SU_ADDRESS, context) == false {
+		return &processor.InvalidTransactionError{Msg: "applyChangeRecordState : Authentication failed"}
 	}
 
 	//GS1Code Manager의 경우에는 권한이 SU Address거나 SU Manager의 경우에는
 	//등록, 삭제, 수정이 가능하다.
 	return ons_manager.RemoveSuManager(removeSuManagerData.GetAddress(), requestor, context)
 }
-
 
 func UnpackPayload(payloadData []byte) (*ons_pb2.SendONSTransactionPayload, error) {
 	payload := &ons_pb2.SendONSTransactionPayload{}
@@ -372,4 +381,21 @@ func UnpackPayload(payloadData []byte) (*ons_pb2.SendONSTransactionPayload, erro
 			Msg: fmt.Sprint("Failed to unmarshal ONSTransaction: %v", err)}
 	}
 	return payload, nil
+}
+
+func GetPermissionLevel(gs1_code string, requestor string, require_perm ons_manager.Permission, context *processor.Context) bool{
+	permission, err:= ons_manager.CheckPermission(gs1_code, requestor, context)
+
+	if err != nil {
+		logger.Debugf("Failed to check permission")
+		return false
+	}
+
+	//permission is requestor's permission
+	//요청자가 가지는 permission level이 요구하는 permission level보다 작거나 같으면
+	//요청자는 원하는 permission level을 가지고 있는 것이다.
+	if permission <= require_perm {
+		return true
+	}
+	return false
 }
