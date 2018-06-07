@@ -34,6 +34,7 @@ var opts struct {
 	GS1Code string `short:"g" long:"gs1code" description:"GS1 code for testing" default:"00800000000000"`
 	Connect string `short:"c" long:"connect" description:"The validator component endpoint to" default:"http://198.13.60.39:8080"`
 	RandomPrivKey []bool `short:"p" long:"random" description:"Use random private key(default key: $HOME/.sawtooth/key/$USER.priv"`
+	KeyName string `short:"n" long:"keyname" description:"Use $HOME/.sawtooth/key/[keyname].priv key"`
 	Service string  `short:"s" long:"service" description:"Service field of NAPTR" default:"http://localhost/service.xml"`
 	Regexp string  `short:"e" long:"regexp" description:"Regexp field of NAPTR" default:"!^.*$!http://example.com/cgibin/epcis!"`
 	Flags rune `short:"f" long:"flags" description:"Flags field of NAPTR (default : u)" default:"117"`
@@ -55,7 +56,10 @@ const action_get_svc = "get_svc"
 const action_get_mngr = "get_mngr"
 const action_change_gstate = "change_gstate"
 const action_change_rstate = "change_rstate"
-const action_add_mngr = "add_manager"
+const action_add_mngr = "add_mngr"
+const action_remove_mngr = "remove_mngr"
+const action_add_sumngr = "add_sumngr"
+const action_remove_sumngr = "remove_sumngr"
 
 const (
 	REGISTER_GS1CODE = iota+1
@@ -67,6 +71,9 @@ const (
 	CHANGE_GSTATE
 	CHANGE_RSTATE
 	ADD_MANAGER
+	REMOVE_MANAGER
+	ADD_SUMANAGER
+	REMOVE_SUMANAGER
 	_
 	_
 	GET_GS1CODE_DATA
@@ -128,12 +135,24 @@ func main() {
 		os.Exit(2)
 	}
 
+
 	input_gs1_code := opts.GS1Code
 	var local_private_key []byte
 	var local_public_key []byte
 	user, err := user.Current()
 	if is_use_random_priv_key == false {
-		local_private_key, err = ioutil.ReadFile(user.HomeDir+"/.sawtooth/keys/"+user.Username+".priv")
+		var keyName string
+		if len(opts.KeyName) != 0 {
+			keyName = opts.KeyName
+		}else{
+			keyName = user.Username
+		}
+
+		if is_verbose == true {
+			fmt.Println("Load private key from "+user.HomeDir+"/.sawtooth/keys/"+keyName+".priv")
+		}
+
+		local_private_key, err = ioutil.ReadFile(user.HomeDir+"/.sawtooth/keys/"+keyName+".priv")
 		if err != nil {
 			fmt.Println("Fail to read private key.")
 			os.Exit(2)
@@ -178,8 +197,17 @@ func main() {
 		transaction_type = CHANGE_RSTATE
 	}else if args[0] == action_add_mngr {
 		transaction_type = ADD_MANAGER
+	}else if args[0] == action_remove_mngr {
+		transaction_type = REMOVE_MANAGER
+	}else if args[0] == action_add_sumngr {
+		transaction_type = ADD_SUMANAGER
+	}else if args[0] == action_remove_sumngr {
+		transaction_type = REMOVE_SUMANAGER
 	}else if args[0] == action_get_mngr {
 		transaction_type = GET_MNGR
+	}else{
+		fmt.Printf("Need vaild command(your command = %v)\n", args[0])
+		os.Exit(2)
 	}
 
 	if len(opts.ManagerAddress) == 0 {
@@ -243,6 +271,15 @@ func main() {
 		address = MakeAddressByGS1Code(input_gs1_code)
 	case ADD_MANAGER:
 		payload, tr_err = MakeAddManagerPayload(input_gs1_code, opts.ManagerAddress)
+		address = GetONSManagerAddress()
+	case REMOVE_MANAGER:
+		payload, tr_err = MakeRemoveManagerPayload(input_gs1_code)
+		address = GetONSManagerAddress()
+	case ADD_SUMANAGER:
+		payload, tr_err = MakeAddSuManagerPayload(opts.ManagerAddress)
+		address = GetONSManagerAddress()
+	case REMOVE_SUMANAGER:
+		payload, tr_err = MakeRemoveSuManagerPayload(opts.ManagerAddress)
 		address = GetONSManagerAddress()
 	case GET_MNGR:
 		ons_query.QueryONSManager(GetONSManagerAddress(), opts.Connect, is_verbose)
@@ -493,6 +530,36 @@ func MakeAddManagerPayload(gs1_code string, address string) (*ons_pb2.SendONSTra
 		AddManager: &ons_pb2.SendONSTransactionPayload_AddManagerTransactionData {
 			Gs1Code : gs1_code,
 			Address: address,
+		},
+	}
+	return tmp, nil
+}
+
+func MakeRemoveManagerPayload(gs1_code string) (*ons_pb2.SendONSTransactionPayload, error){
+	tmp := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_REMOVE_MANAGER,
+		RemoveManager: &ons_pb2.SendONSTransactionPayload_RemoveManagerTransactionData {
+			Gs1Code : gs1_code,
+		},
+	}
+	return tmp, nil
+}
+
+func MakeAddSuManagerPayload(address string) (*ons_pb2.SendONSTransactionPayload, error){
+	tmp := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_ADD_SUMANAGER,
+		AddSumanager: &ons_pb2.SendONSTransactionPayload_AddSUManagerTransactionData {
+			Address: address,
+		},
+	}
+	return tmp, nil
+}
+
+func MakeRemoveSuManagerPayload(address string) (*ons_pb2.SendONSTransactionPayload, error){
+	tmp := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_REMOVE_SUMANAGER,
+		RemoveSumanager: &ons_pb2.SendONSTransactionPayload_RemoveSUManagerTransactionData {
+			Address : address,
 		},
 	}
 	return tmp, nil

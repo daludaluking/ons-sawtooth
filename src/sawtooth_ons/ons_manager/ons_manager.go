@@ -138,6 +138,7 @@ func CheckPermission(gs1_code string, address string, context *processor.Context
 	}
 
 	if address == g_sudo_address {
+		logger.Debugf("You have su address auth")
 		return PERMISSION_SU_ADDRESS, nil
 	}
 
@@ -148,6 +149,7 @@ func CheckPermission(gs1_code string, address string, context *processor.Context
 	v, ok := g_cached_ons_sumanagers[address];
 	if ok {
 		if v == true {
+			logger.Debugf("You have su manager auth")
 			return PERMISSION_SU_MANAGER, nil
 		}
 	}
@@ -155,6 +157,7 @@ func CheckPermission(gs1_code string, address string, context *processor.Context
 	vv, ok := g_cached_ons_managers[gs1_code];
 	if ok {
 		if vv == address {
+			logger.Debugf("You have gs1 manager auth for %v", gs1_code)
 			return PERMISSION_MANAGER, nil
 		}
 	}
@@ -185,10 +188,15 @@ func AddGS1CodeManager(gs1_code string, address string, requestor string, contex
 	}
 
 	//update or add address as gs1 code manager to cached ons managers
-	if _, ok := g_cached_ons_managers[gs1_code]; ok {
+	if v, ok := g_cached_ons_managers[gs1_code]; ok {
 		logger.Debugf("gs1 code manager already exist in the cache : %v", gs1_code)
-		g_cached_ons_managers[gs1_code] = address
+		if v == address {
+			logger.Debugf("gs1 code manager has the same address: %v", address)
+			return SaveONSManager(requestor, g_ons_manager, context)
+		}
 	}
+
+	g_cached_ons_managers[gs1_code] = address
 
 	new_manager := &ons_pb2.ONSGS1CodeManager{
 		Gs1Code: gs1_code,
@@ -231,11 +239,10 @@ func RemoveGS1CodeManager(gs1_code string, requestor string, context *processor.
 	for idx, manager := range g_ons_manager.ManagerAddresses {
 		if manager.Gs1Code == gs1_code {
 			g_ons_manager.ManagerAddresses = append(g_ons_manager.ManagerAddresses[0:idx], g_ons_manager.ManagerAddresses[idx+1:]...)
-			return SaveONSManager(requestor, g_ons_manager, context)
 		}
 	}
 
-	return &processor.InternalError{Msg: "Filed to find gs1 code" + gs1_code}
+	return SaveONSManager(requestor, g_ons_manager, context)
 }
 
 //just for test
@@ -257,8 +264,11 @@ func AddSuManager(su_address string, requestor string, context *processor.Contex
 
 	//update or add address as gs1 code manager to cached ons managers
 	if _, ok := g_cached_ons_sumanagers[su_address]; ok {
-		g_cached_ons_sumanagers[su_address] = true
+		logger.Debugf("su manager already exist in the cache : %v, so just call SaveONSManager with the same data", su_address)
+		return SaveONSManager(requestor, g_ons_manager, context)
 	}
+
+	g_cached_ons_sumanagers[su_address] = true
 
 	new_manager := &ons_pb2.ONSGS1CodeManager{
 		Gs1Code: "",
@@ -294,9 +304,8 @@ func RemoveSuManager(su_address string, requestor string, context *processor.Con
 	for idx, manager := range g_ons_manager.SuAddresses {
 		if manager.Address == su_address {
 			g_ons_manager.SuAddresses = append(g_ons_manager.SuAddresses[0:idx], g_ons_manager.SuAddresses[idx+1:]...)
-			return SaveONSManager(requestor, g_ons_manager, context)
 		}
 	}
 
-	return &processor.InternalError{Msg: "Filed to find su address" + su_address}
+	return SaveONSManager(requestor, g_ons_manager, context)
 }
