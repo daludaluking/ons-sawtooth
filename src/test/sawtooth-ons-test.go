@@ -41,6 +41,7 @@ var opts struct {
 	ServiceTypePath string `short:"x" long:"xml" description:"The service type xml or json file path" default:"./servicetype.xml"`
 	ServieTypeAddress string `short:"a" long:"svcaddr" description:"The address of service type"`
 	State int32 `short:"t" long:"state" description:"The state of GS1 code or record" default:"1"`
+	ManagerAddress string `short:"m" long:"manager" description:"The public key to be gs1 code manager or su manager"`
 }
 
 const action_register = "register"
@@ -51,8 +52,10 @@ const action_register_svc = "register_svc"
 const action_deregister_svc = "deregister_svc"
 const action_get = "get"
 const action_get_svc = "get_svc"
+const action_get_mngr = "get_mngr"
 const action_change_gstate = "change_gstate"
 const action_change_rstate = "change_rstate"
+const action_add_mngr = "add_manager"
 
 const (
 	REGISTER_GS1CODE = iota+1
@@ -63,10 +66,12 @@ const (
 	DEREGISTER_SVC
 	CHANGE_GSTATE
 	CHANGE_RSTATE
+	ADD_MANAGER
 	_
 	_
 	GET_GS1CODE_DATA
 	GET_SVC_DATA
+	GET_MNGR
 )
 
 func IfThenElse(condition bool, a interface{}, b interface{}) interface{} {
@@ -171,6 +176,17 @@ func main() {
 		transaction_type = CHANGE_GSTATE
 	}else if strings.Compare(args[0], action_change_rstate) == 0 {
 		transaction_type = CHANGE_RSTATE
+	}else if args[0] == action_add_mngr {
+		transaction_type = ADD_MANAGER
+	}else if args[0] == action_get_mngr {
+		transaction_type = GET_MNGR
+	}
+
+	if len(opts.ManagerAddress) == 0 {
+		if transaction_type == ADD_MANAGER {
+			fmt.Println("Need to input manager address.")
+			os.Exit(2)
+		}
 	}
 
 	if is_testing == true || is_verbose == true {
@@ -196,7 +212,7 @@ func main() {
 	var tr_err error
 	switch transaction_type {
 	case REGISTER_GS1CODE:
-		payload, tr_err = MakeRegisterGS1CodePayload(input_gs1_code)
+		payload, tr_err = MakeRegisterGS1CodePayload(input_gs1_code, signer.GetPublicKey().AsHex())
 		address = MakeAddressByGS1Code(input_gs1_code)
 	case DEREGISTER_GS1CODE:
 		payload, tr_err = MakeDeregisterGS1CodePayload(input_gs1_code)
@@ -225,8 +241,14 @@ func main() {
 	case CHANGE_RSTATE:
 		payload, tr_err = MakeChangeRStatePayload(input_gs1_code, opts.RecordIdx, opts.State)
 		address = MakeAddressByGS1Code(input_gs1_code)
+	case ADD_MANAGER:
+		payload, tr_err = MakeAddManagerPayload(input_gs1_code, opts.ManagerAddress)
+		address = GetONSManagerAddress()
+	case GET_MNGR:
+		ons_query.QueryONSManager(GetONSManagerAddress(), opts.Connect, is_verbose)
+		return
 	default:
-		payload, tr_err = MakeRegisterGS1CodePayload(input_gs1_code)
+		payload, tr_err = MakeRegisterGS1CodePayload(input_gs1_code, signer.GetPublicKey().AsHex())
 		address = MakeAddressByGS1Code(input_gs1_code)
 	}
 
@@ -368,11 +390,12 @@ func MakeBatchList(transaction_payload *ons_pb2.SendONSTransactionPayload, signe
 	return proto.Marshal(batch_list)
 }
 
-func MakeRegisterGS1CodePayload(gs1_code string) (*ons_pb2.SendONSTransactionPayload, error){
+func MakeRegisterGS1CodePayload(gs1_code string, owner_address string) (*ons_pb2.SendONSTransactionPayload, error){
 	register_gs1_code_payload := &ons_pb2.SendONSTransactionPayload {
 		TransactionType: ons_pb2.SendONSTransactionPayload_REGISTER_GS1CODE,
 		RegisterGs1Code: &ons_pb2.SendONSTransactionPayload_RegisterGS1CodeTransactionData {
-			Gs1Code : gs1_code,
+			Gs1Code: gs1_code,
+			OwnerId: owner_address,
 		},
 	}
 	return register_gs1_code_payload, nil
@@ -464,6 +487,17 @@ func MakeChangeRStatePayload(gs1_code string, record_idx uint32, state int32) (*
 	return change_record_state_payload, nil
 }
 
+func MakeAddManagerPayload(gs1_code string, address string) (*ons_pb2.SendONSTransactionPayload, error){
+	tmp := &ons_pb2.SendONSTransactionPayload {
+		TransactionType: ons_pb2.SendONSTransactionPayload_ADD_MANAGER,
+		AddManager: &ons_pb2.SendONSTransactionPayload_AddManagerTransactionData {
+			Gs1Code : gs1_code,
+			Address: address,
+		},
+	}
+	return tmp, nil
+}
+
 func hexdigestbyString(str string) string {
 	hash := sha512.New()
 	hash.Write([]byte(str))
@@ -480,6 +514,10 @@ func hexdigestbyByte(data []byte) string {
 
 func MakeAddressByGS1Code(gs1_code string) string{
 	return namespace + hexdigestbyString(gs1_code)[:64]
+}
+
+func GetONSManagerAddress() string {
+	return namespace + hexdigestbyString("ons_manager")[:64]
 }
 
 func MakeAddressByServiceType(requestor string, service_type *ons_pb2.ServiceType) (string, error) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"os"
-	ons "sawtooth_ons/handler"
+	ons "sawtooth_ons/ons_handler"
 	"sawtooth_sdk/logging"
 	"sawtooth_sdk/processor"
 	"syscall"
@@ -13,6 +13,7 @@ import (
 var opts struct {
 	Verbose []bool `short:"v" long:"verbose" description:"Increase verbosity"`
 	Connect string `short:"C" long:"connect" description:"The validator component endpoint to" default:"tcp://localhost:4004"`
+	PublicKey string `short:"p" long:"publickey" description:"ONS super user address" required:"true"`
 }
 
 func main() {
@@ -52,6 +53,13 @@ func main() {
 	fmt.Printf("endpoint = %v\n", opts.Connect)
 
 	handler := &ons.ONSHandler{}
+
+	//just for test yet.
+	if handler.SetSudoAddress(opts.PublicKey) == false {
+		logger.Debugf("Failed to set sudo address")
+		os.Exit(2)
+	}
+
 	processor := processor.NewTransactionProcessor(opts.Connect)
 	/*
 		processor.SetMaxQueueSize(opts.Queue)

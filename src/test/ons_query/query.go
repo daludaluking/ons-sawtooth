@@ -149,8 +149,8 @@ func QueryGS1CodeData(gs1_code_address string, url string, verbose bool) (*ons_p
 	return gs1_code_data, nil
 }
 
-func QueryServicTypeData(gs1_code_address string, url string, verbose bool) (*ons_pb2.ServiceType, error) {
-	pb2_data, err := GetRawData(gs1_code_address, url, verbose)
+func QueryServicTypeData(service_type_address string, url string, verbose bool) (*ons_pb2.ServiceType, error) {
+	pb2_data, err := GetRawData(service_type_address, url, verbose)
 	if err != nil {
 		return nil, err
 	}
@@ -169,4 +169,27 @@ func QueryServicTypeData(gs1_code_address string, url string, verbose bool) (*on
 	_ = PrintPrettyJson(svc_type_data, verbose)
 
 	return svc_type_data, nil
+}
+
+
+func QueryONSManager(ons_manager_address string, url string, verbose bool) (*ons_pb2.ONSManager, error) {
+	pb2_data, err := GetRawData(ons_manager_address, url, verbose)
+	if err != nil {
+		return nil, err
+	}
+
+	ons_manager:= &ons_pb2.ONSManager{}
+	err = proto.Unmarshal(pb2_data, ons_manager)
+	if err != nil {
+		fmt.Printf("Fail to unmarshal GS1 code data : %v\n", err)
+		return nil, err
+	}
+
+	if verbose == true {
+		fmt.Printf("protobuf unmarshaled data : %v\n", ons_manager_address)
+	}
+
+	_ = PrintPrettyJson(ons_manager, verbose)
+
+	return ons_manager, nil
 }

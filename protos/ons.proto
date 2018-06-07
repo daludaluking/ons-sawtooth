@@ -1,6 +1,18 @@
 syntax = "proto3";
 option go_package = "ons_pb2";
 
+message ONSGS1CodeManager {
+    //ONS의 GS1Code를 관리할 수 있는 권한을 가진 manager 정보.
+    string gs1_code = 1;
+    string address = 2;
+}
+
+message ONSManager {
+    //Manager 모든 권한을 가진 address
+    repeated ONSGS1CodeManager su_addresses = 1;
+    repeated ONSGS1CodeManager manager_addresses = 2;
+}
+
 message ServiceType {
     message ServiceTypeField {
         string key = 1;
@@ -67,6 +79,8 @@ message GS1CodeData {
 message SendONSTransactionPayload {
     message RegisterGS1CodeTransactionData {
         string gs1_code = 1;
+        //GS1 Code의 소유자 address.
+        string owner_id = 2;
     }
 
     message DeregisterGS1CodeTransactionData {
@@ -110,6 +124,23 @@ message SendONSTransactionPayload {
         Record.RecordState state = 3;
     }
 
+    message AddManagerTransactionData {
+        string gs1_code = 1;
+        string address = 2;
+    }
+
+    message RemoveManagerTransactionData {
+        string gs1_code = 1;
+    }
+
+    message AddSUManagerTransactionData {
+        string address = 1;
+    }
+
+    message RemoveSUManagerTransactionData {
+        string address = 2;
+    }
+
     enum ONSTransactionType {
         REGISTER_GS1CODE = 0;
         DEREGISTER_GS1CODE = 1;
@@ -119,6 +150,10 @@ message SendONSTransactionPayload {
         DEREGISTER_SERVICETYPE = 5;
         CHANGE_GS1CODE_STATE = 6;
         CHANGE_RECORD_STATE = 7;
+        ADD_MANAGER = 8;
+        REMOVE_MANAGER = 9;
+        ADD_SUMANAGER = 10;
+        REMOVE_SUMANAGER = 11;
     }
 
     ONSTransactionType transaction_type = 1;
@@ -130,4 +165,8 @@ message SendONSTransactionPayload {
     DeregisterServiceTypeTransactionData deregister_service_type = 7;
     ChangeGS1CodeStateTransactionData change_gs1_code_state = 8;
     ChangeRecordStateTransactionData change_record_state = 9;
+    AddManagerTransactionData add_manager = 10;
+    RemoveManagerTransactionData remove_manager = 11;
+    AddSUManagerTransactionData add_sumanager = 12;
+    RemoveSUManagerTransactionData remove_sumanager = 13;
 }
