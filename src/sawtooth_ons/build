@@ -1,2 +1,0 @@
-export GOPATH=$HOME/go:$HOME/sawtooth/sawtooth-core/sdk/go:$HOME/go/projects/ons-sawtooth
-go build -o ./bin/sawtooth_ons
