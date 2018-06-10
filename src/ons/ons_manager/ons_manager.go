@@ -70,6 +70,7 @@ func LoadONSManager(context *processor.Context) (*ons_pb2.ONSManager, error) {
 
 		return ons_manager, nil
 	}
+	logger.Debugf("LoadONSManager: address %v doesn't exist", address)
 	return nil, nil
 }
 
@@ -116,7 +117,7 @@ func loadCachedONSManager(context *processor.Context) error {
 
 		g_ons_manager = _manager
 
-				//caching에서 찾기..
+		//caching에서 찾기..
 		for _, manager := range g_ons_manager.ManagerAddresses {
 			g_cached_ons_managers[manager.GetGs1Code()] = manager.GetAddress()
 		}
@@ -128,6 +129,21 @@ func loadCachedONSManager(context *processor.Context) error {
 		g_state_cached = true
 	}
 	return nil
+}
+
+func clearCachedONSManager() {
+	//context에서 manager address를 읽어와야 한다.
+	//매번 읽을 수 없으니 caching으로..
+	if g_state_cached == true {
+		g_ons_manager = nil
+		g_cached_ons_managers = nil
+		g_cached_ons_sumanagers = nil
+
+		g_ons_manager = &ons_pb2.ONSManager{}
+		g_cached_ons_managers = make(map[string]string)
+		g_cached_ons_managers = make(map[string]string)
+		g_state_cached = false
+	}
 }
 
 func CheckPermission(gs1_code string, address string, context *processor.Context) (Permission, error) {
@@ -249,6 +265,7 @@ func RemoveGS1CodeManager(gs1_code string, requestor string, context *processor.
 //just for test
 func DeleteAllManager(context *processor.Context) error {
 	address := getONSManagerAddress()
+	clearCachedONSManager()
 	_, err := context.DeleteState([]string{address})
 	return err
 }
@@ -309,4 +326,22 @@ func RemoveSuManager(su_address string, requestor string, context *processor.Con
 	}
 
 	return SaveONSManager(requestor, g_ons_manager, context)
+}
+
+func OperateManager(op uint32, requestor string, context *processor.Context) error {
+	//if op is 1, load cache...
+	if requestor != g_sudo_address {
+		return &processor.InvalidTransactionError{Msg: "LoadManager : Authentication failed"}
+	}
+
+	if op == 1 {
+		logger.Debugf("OperateManager : load manager data for caching")
+		clearCachedONSManager()
+		err := loadCachedONSManager(context)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

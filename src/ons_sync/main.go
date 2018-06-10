@@ -29,7 +29,8 @@ func main() {
 
 	onsEvtHandler.Subscribe(true)
 
-	<-interrupt
+	sig := <-interrupt
+	log.Println(sig)
 	//interrupt가 발생하면.. (ctrl-c와 같은..)
 	onsEvtHandler.Subscribe(false)
 	onsEvtHandler.Terminate(true)

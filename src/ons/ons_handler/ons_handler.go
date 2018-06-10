@@ -48,6 +48,8 @@ func (self *ONSHandler) Apply(request *processor_pb2.TpProcessRequest, context *
 	logger.Debugf("ONS txn %v: type %v", request.Signature, payload.TransactionType)
 
 	switch payload.TransactionType {
+	case ons_pb2.SendONSTransactionPayload_OP_MANAGER:
+		return applyOPManager(payload.OpManager, context, requestor_pk)
 	case ons_pb2.SendONSTransactionPayload_REGISTER_GS1CODE:
 		return applyRegiserGS1Code(payload.RegisterGs1Code, context, requestor_pk)
 	case ons_pb2.SendONSTransactionPayload_DEREGISTER_GS1CODE:
@@ -371,6 +373,15 @@ func applyRemoveSuManager(
 	//GS1Code Manager의 경우에는 권한이 SU Address거나 SU Manager의 경우에는
 	//등록, 삭제, 수정이 가능하다.
 	return ons_manager.RemoveSuManager(removeSuManagerData.GetAddress(), requestor, context)
+}
+
+func applyOPManager(
+	opManagerData *ons_pb2.SendONSTransactionPayload_OPManagerTransactionData,
+	context *processor.Context,
+	requestor string) error {
+	//GS1Code Manager의 경우에는 권한이 SU Address거나 SU Manager의 경우에는
+	//등록, 삭제, 수정이 가능하다.
+	return ons_manager.OperateManager(opManagerData.GetOp(), requestor, context)
 }
 
 func UnpackPayload(payloadData []byte) (*ons_pb2.SendONSTransactionPayload, error) {

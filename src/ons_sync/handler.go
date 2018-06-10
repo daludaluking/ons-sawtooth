@@ -80,7 +80,7 @@ func NewONSEventHandler(addr string, path string) (*ONSEventHandler, error) {
 		wg: &sync.WaitGroup{},
 		conn: conn,
 	}
-	onsEvHandler.AddWaitGroup(2)
+	onsEvHandler.AddWaitGroup(1)
 	onsEvHandler.initialized = true
 	return onsEvHandler, nil
 }
@@ -96,19 +96,20 @@ func (h *ONSEventHandler) Run() bool {
 }
 
 func (h *ONSEventHandler) Terminate(waiting bool) {
+
+	defer h.conn.Close()
+
 	if h.subscirbed == true {
 		h.Subscribe(false)
 	}
 	//waiting needed?
 
-	h.exit_rcv <- true
+	//h.exit_rcv <- true
 	h.exit_sub <- true
-
+	log.Println("Terminate : called")
 	if waiting == true {
 		h.Wait()
 	}
-
-	h.conn.Close()
 }
 
 func (h *ONSEventHandler) AddWaitGroup(wait_group_count int) {
@@ -121,6 +122,7 @@ func (h *ONSEventHandler) Wait() {
 
 func (h *ONSEventHandler) Subscribe(subscribing bool) {
 	h.subscribing <- subscribing
+	h.subscirbed = subscribing
 }
 
 func (h *ONSEventHandler) GetBlockDeltas(block_id string) {
@@ -147,6 +149,8 @@ func (h *ONSEventHandler) subscribe(subscribing bool) error {
 		log.Printf("Failed to sendSubscribeMessage : %v", err)
 	}
 
+	log.Printf("Called subscribe : %v", subscribing)
+
 	return err
 }
 
@@ -167,7 +171,10 @@ func (h *ONSEventHandler) getBlockDelteas(block_id string) error {
 }
 
 func (h *ONSEventHandler) runSubscriber() {
-	defer h.wg.Done()
+	defer func() {
+		h.wg.Done()
+		log.Println("runSubscriber : Exit")
+	}()
 	for {
 		select {
 		case subscribing := <- h.subscribing:
@@ -175,17 +182,22 @@ func (h *ONSEventHandler) runSubscriber() {
 				h.subscirbed = subscribing
 				h.subscribe(subscribing)
 			}
+			log.Printf("runSubscriber : called subscribing : %v", subscribing)
 		case block_id := <- h.block_id:
 			h.getBlockDelteas(block_id)
 		case _ = <- h.exit_sub:
+			log.Println("runSubscriber : called exit")
 			return
 		}
 	}
 }
 
 func (h *ONSEventHandler) runReceiveEvents() {
-	defer h.wg.Done()
-	defer h.conn.Close()
+	defer func() {
+		//h.conn.Close()
+		//h.wg.Done()
+		log.Println("runReceiveEvents : Exit")
+	}()
 	for {
 		msg_type, message, err := h.conn.ReadMessage()
 		if err != nil {

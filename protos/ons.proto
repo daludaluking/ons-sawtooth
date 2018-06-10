@@ -138,7 +138,11 @@ message SendONSTransactionPayload {
     }
 
     message RemoveSUManagerTransactionData {
-        string address = 2;
+        string address = 1;
+    }
+
+    message OPManagerTransactionData {
+        uint32 op = 1;
     }
 
     enum ONSTransactionType {
@@ -154,6 +158,7 @@ message SendONSTransactionPayload {
         REMOVE_MANAGER = 9;
         ADD_SUMANAGER = 10;
         REMOVE_SUMANAGER = 11;
+        OP_MANAGER = 12;
     }
 
     ONSTransactionType transaction_type = 1;
@@ -169,4 +174,5 @@ message SendONSTransactionPayload {
     RemoveManagerTransactionData remove_manager = 11;
     AddSUManagerTransactionData add_sumanager = 12;
     RemoveSUManagerTransactionData remove_sumanager = 13;
+    OPManagerTransactionData op_manager = 14;
 }
