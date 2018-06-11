@@ -8,7 +8,9 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-
+	"encoding/base64"
+	"protobuf/ons_pb2"
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 )
 
@@ -54,7 +56,7 @@ type ONSEventHandler struct {
 	subscirbed bool
 	subscribing chan bool
 	exit_sub chan bool
-	exit_rcv chan bool
+	rcv_exited chan bool
 	block_id chan string
 	wg *sync.WaitGroup
 	conn *websocket.Conn
@@ -76,7 +78,7 @@ func NewONSEventHandler(addr string, path string) (*ONSEventHandler, error) {
 		subscribing:  make(chan bool),
 		block_id: make(chan string),
 		exit_sub: make(chan bool),
-		exit_rcv: make(chan bool),
+		rcv_exited: make(chan bool),
 		wg: &sync.WaitGroup{},
 		conn: conn,
 	}
@@ -122,7 +124,7 @@ func (h *ONSEventHandler) Wait() {
 
 func (h *ONSEventHandler) Subscribe(subscribing bool) {
 	h.subscribing <- subscribing
-	h.subscirbed = subscribing
+	//h.subscirbed = subscribing
 }
 
 func (h *ONSEventHandler) GetBlockDeltas(block_id string) {
@@ -192,10 +194,49 @@ func (h *ONSEventHandler) runSubscriber() {
 	}
 }
 
+type ONSEvent struct {
+	BlockNum uint64 `json:"block_num,string"`
+	BlockId string `json:"block_id"`
+	PreviousBlockId string `json:"previous_block_id"`
+	StateChanges []map[string]string `json:"state_changes"`
+}
+
+func UpdateOnsEvent(onsEvent *ONSEvent) {
+	if onsEvent == nil {
+		return
+	}
+
+	for _, state := range onsEvent.StateChanges {
+		state_value, err := base64.StdEncoding.DecodeString(state["value"])
+		if err != nil {
+			log.Printf("Fail to base64 decoding in UpdateOnsEvent : %v\n", err)
+		}else {
+			log.Printf("decoded state value = %v\n", state_value)
+			gs1_code_data := &ons_pb2.GS1CodeData{}
+			err = proto.Unmarshal(state_value, gs1_code_data)
+			if err != nil {
+				log.Printf("maybe ServiceType : %v\n", err)
+				service_type_data := &ons_pb2.ServiceType{}
+				err = proto.Unmarshal(state_value, gs1_code_data)
+				//update database
+				if err != nil {
+					log.Printf("Fail to unmarshal proto buffer binary data in UpdateOnsEvent : %v\n", err)
+					return
+				}
+				log.Printf("unmarshaled state value = %v\n", service_type_data)
+			}else {
+				log.Printf("unmarshaled state value = %v\n", gs1_code_data)
+			}
+
+		}
+	}
+}
+
 func (h *ONSEventHandler) runReceiveEvents() {
 	defer func() {
 		//h.conn.Close()
 		//h.wg.Done()
+		//h.rcv_exited <- true
 		log.Println("runReceiveEvents : Exit")
 	}()
 	for {
@@ -207,7 +248,15 @@ func (h *ONSEventHandler) runReceiveEvents() {
 			go func() {
 				log.Printf("message type : %v", msg_type)
 				//unmarshaling is needed...
+				message = append([]byte{'['}, append(message, []byte{']'}...)...)
 				log.Printf("message : %v", string(message))
+				var onsEvent []ONSEvent
+				err = json.Unmarshal(message, &onsEvent)
+				if err != nil {
+					log.Printf("marshaling error : %#v", err)
+				}
+				log.Printf("json : %#v", onsEvent[0])
+				UpdateOnsEvent(&onsEvent[0])
 			}()
 		}
 	}

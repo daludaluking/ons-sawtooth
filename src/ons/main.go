@@ -2,18 +2,20 @@ package main
 
 import (
 	"fmt"
-	flags "github.com/jessevdk/go-flags"
+	"syscall"
 	"os"
-	ons "ons/ons_handler"
+	"os/user"
+	"io/ioutil"
 	"sawtooth_sdk/logging"
 	"sawtooth_sdk/processor"
-	"syscall"
+	ons "ons/ons_handler"
+	flags "github.com/jessevdk/go-flags"
 )
 
 var opts struct {
 	Verbose []bool `short:"v" long:"verbose" description:"Increase verbosity"`
 	Connect string `short:"C" long:"connect" description:"The validator component endpoint to" default:"tcp://localhost:4004"`
-	PublicKey string `short:"p" long:"publickey" description:"ONS super user address" required:"true"`
+	PublicKey string `short:"p" long:"publickey" description:"ONS super user address"`
 }
 
 func main() {
@@ -31,6 +33,7 @@ func main() {
 		}
 	}
 
+
 	var loggingLevel int
 	switch len(opts.Verbose) {
 	case 0:
@@ -46,8 +49,26 @@ func main() {
 	logger.Debugf("verbose = %v\n", len(opts.Verbose))
 	logger.Debugf("endpoint = %v\n", opts.Connect)
 
-	//for debugging ... ...
+	var local_public_key string
+	if len(opts.PublicKey) == 0 {
+		user, err := user.Current()
+		path := user.HomeDir+"/.sawtooth/keys/"+user.Username+".pub"
+		logger.Debugf("%s is used as public key\n", path)
+		_public_key_bytes, err := ioutil.ReadFile(path)
+		if err != nil {
+			fmt.Println("Fail to read private key.")
+			os.Exit(2)
+		}
+		if _public_key_bytes[len(_public_key_bytes)-1] == 10 {
+			_public_key_bytes = _public_key_bytes[:len(_public_key_bytes)-1]
+		}
+		local_public_key = string(_public_key_bytes)
+		logger.Debugf("public key is %s\n", local_public_key)
+	}else{
+		local_public_key = opts.PublicKey
+	}
 
+	//for debugging ... ...
 	fmt.Printf("command line arguments: %v\n", os.Args)
 	fmt.Printf("verbose = %v\n", len(opts.Verbose))
 	fmt.Printf("endpoint = %v\n", opts.Connect)
@@ -55,7 +76,7 @@ func main() {
 	handler := &ons.ONSHandler{}
 
 	//just for test yet.
-	if handler.SetSudoAddress(opts.PublicKey) == false {
+	if handler.SetSudoAddress(local_public_key) == false {
 		logger.Debugf("Failed to set sudo address")
 		os.Exit(2)
 	}

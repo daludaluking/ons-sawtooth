@@ -1,14 +1,14 @@
 package ons_query
 
 import (
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/jsonpb"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"encoding/json"
 	"encoding/base64"
 	"protobuf/ons_pb2"
-	"io/ioutil"
-	"net/http"
-	"fmt"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 func GetRawData(address string, url string, verbose bool) ([]byte, error) {
