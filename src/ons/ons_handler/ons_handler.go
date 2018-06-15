@@ -396,7 +396,6 @@ func UnpackPayload(payloadData []byte) (*ons_pb2.SendONSTransactionPayload, erro
 
 func GetPermissionLevel(gs1_code string, requestor string, require_perm ons_manager.Permission, context *processor.Context) bool{
 	permission, err:= ons_manager.CheckPermission(gs1_code, requestor, context)
-
 	if err != nil {
 		logger.Debugf("Failed to check permission")
 		return false

@@ -29,6 +29,7 @@ var g_cached_ons_sumanagers map[string]bool = make(map[string]bool)
 func SetSudoAddress(address string) bool {
 	if g_sudo_address == "empty" {
 		g_sudo_address = address
+		logger.Debugf("SetSudoAddress: %v", g_sudo_address)
 		return true
 	}
 	return false
@@ -147,16 +148,17 @@ func clearCachedONSManager() {
 }
 
 func CheckPermission(gs1_code string, address string, context *processor.Context) (Permission, error) {
+	logger.Debugf("CheckPermission : %s, %s", address, g_sudo_address)
+	if address == g_sudo_address {
+		logger.Debugf("You have su address auth")
+		return PERMISSION_SU_ADDRESS, nil
+	}
+
 	if g_state_cached == false {
 		err := loadCachedONSManager(context)
 		if err != nil {
 			return PERMISSION_NONE, err
 		}
-	}
-
-	if address == g_sudo_address {
-		logger.Debugf("You have su address auth")
-		return PERMISSION_SU_ADDRESS, nil
 	}
 
 	if len(gs1_code) == 0 {
@@ -187,7 +189,7 @@ func GetGS1CodeManagerAddress(gs1_code string, context *processor.Context) (stri
 	if g_state_cached == false {
 		err := loadCachedONSManager(context)
 		if err != nil {
-			return "", false, err
+			logger.Debugf("Failed to load ons managers")
 		}
 	}
 	v, ok := g_cached_ons_managers[gs1_code]
@@ -200,7 +202,7 @@ func AddGS1CodeManager(gs1_code string, address string, requestor string, contex
 	if g_state_cached == false {
 		err := loadCachedONSManager(context)
 		if err != nil {
-			return err
+			logger.Debugf("Failed to load ons managers")
 		}
 	}
 
@@ -242,7 +244,7 @@ func RemoveGS1CodeManager(gs1_code string, requestor string, context *processor.
 	if g_state_cached == false {
 		err := loadCachedONSManager(context)
 		if err != nil {
-			return err
+			logger.Debugf("Failed to load ons managers")
 		}
 	}
 
@@ -271,13 +273,9 @@ func DeleteAllManager(context *processor.Context) error {
 }
 
 func AddSuManager(su_address string, requestor string, context *processor.Context) error {
-	//context에서 manager address를 읽어와야 한다.
-	//매번 읽을 수 없으니 caching으로..
-	if g_state_cached == false {
-		err := loadCachedONSManager(context)
-		if err != nil {
-			return err
-		}
+	if requestor != g_sudo_address {
+		logger.Debugf("You don't have su address auth")
+		return &processor.InvalidTransactionError{Msg: "AddSuManager : Authentication failed"}
 	}
 
 	//update or add address as gs1 code manager to cached ons managers
@@ -303,13 +301,9 @@ func AddSuManager(su_address string, requestor string, context *processor.Contex
 }
 
 func RemoveSuManager(su_address string, requestor string, context *processor.Context) error {
-	//context에서 manager address를 읽어와야 한다.
-	//매번 읽을 수 없으니 caching으로..
-	if g_state_cached == false {
-		err := loadCachedONSManager(context)
-		if err != nil {
-			return err
-		}
+	if requestor != g_sudo_address {
+		logger.Debugf("You don't have su address auth")
+		return &processor.InvalidTransactionError{Msg: "AddSuManager : Authentication failed"}
 	}
 
 	if g_ons_manager.SuAddresses == nil {

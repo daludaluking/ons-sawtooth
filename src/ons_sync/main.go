@@ -12,13 +12,13 @@ func main() {
 	flag.Parse()
 	log.SetFlags(0)
 
-	DBConnect("198.13.60.39:28016", "ons_ledger", true)
-	DBGetLatestUpdatedBlockInfo()
+	DBConnect("198.13.60.39:28016", "ons_ledger", false)
+	DBGetLatestUpdatedBlockInfo(true)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	onsEvtHandler, err := NewONSEventHandler(*addr, "/subscriptions")
+	onsEvtHandler, err := NewONSEventHandler(*addr, "/subscriptions", false)
 
 	if err != nil {
 		log.Printf("Failed to create ons event handler : ", err)

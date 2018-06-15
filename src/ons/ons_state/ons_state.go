@@ -102,7 +102,7 @@ func Hexdigest(str string) string {
 }
 
 func MakeAddress(address_key string) string {
-	return namespace + Hexdigest(address_key)[:64]
+	return namespace + Hexdigest("gs1")[:8] + Hexdigest(address_key)[:56]
 }
 
 func GetNameSapce() string {

@@ -599,7 +599,7 @@ func hexdigestbyByte(data []byte) string {
 }
 
 func MakeAddressByGS1Code(gs1_code string) string{
-	return namespace + hexdigestbyString(gs1_code)[:64]
+	return namespace + hexdigestbyString("gs1")[:8] + hexdigestbyString(gs1_code)[:56]
 }
 
 func GetONSManagerAddress() string {
