@@ -30,8 +30,23 @@ $ sudo apt-get install -y sawtooth
 ubuntu 16.04에서 실행하는 경우에는 [Using Sawtooth on Ubuntu 16.04](https://sawtooth.hyperledger.org/docs/core/releases/latest/app_developers_guide/ubuntu.html)를 참조하시면 됩니다.
 docker나 AWS에서 실행하기를 원하는 경우에는 [Installing and Running Sawtooth](https://sawtooth.hyperledger.org/docs/core/releases/latest/app_developers_guide/installing_sawtooth.html)를 참조하시면 됩니다.
 
+## ONS-Sawtooth source 다운받기
+zmq4 package를 download하기전에 먼저 pkg-config와 libzmq를 설치한다.
+```
+$ sudo apt-get install pkg-config
+$ sudo apt-get install libzmq5-dev
+```
+zmq, protobuf, ons-sawtooth-sdk, ons-sawtooth source를 download 받는다. 
+```
+$ go get -u github.com/jessevdk/go-flags
+$ go get -u github.com/pebbe/zmq4
+$ go get -u github.com/satori/go.uuid
+$ go get -u github.com/golang/protobuf/proto
+$ go get -u github.com/daludaluking/ons-sawtooth-sdk
+$ go get -u github.com/daludaluking/ons-sawtooth
+```
 
-# 아래의 내용은 개인적인 메모입니다. (차후 삭제 예정)
+### 아래의 내용은 개인적인 메모입니다. (차후 삭제 예정)
 * * *
 *Transaction에서 사용하는 message에 map을 사용하면 block 생성시에 문제가 발생한다.
 map을 사용하지 말고 repeated로 구현해야 한다.
