@@ -3,13 +3,13 @@ package ons_handler
 import (
 	"fmt"
 	"strings"
-	"protobuf/ons_pb2"
-	"ons/ons_state"
-	"ons/ons_service"
-	"ons/ons_manager"
-	"sawtooth_sdk/logging"
-	"sawtooth_sdk/processor"
-	"sawtooth_sdk/protobuf/processor_pb2"
+	"github.com/daludaluking/ons-sawtooth-sdk/ons_pb2"
+	"github.com/daludaluking/ons-sawtooth/src/ons/ons_state"
+	"github.com/daludaluking/ons-sawtooth/src/ons/ons_service"
+	"github.com/daludaluking/ons-sawtooth/src/ons/ons_manager"
+	"github.com/daludaluking/ons-sawtooth-sdk/logging"
+	"github.com/daludaluking/ons-sawtooth-sdk/processor"
+	"github.com/daludaluking/ons-sawtooth-sdk/protobuf/processor_pb2"
 	"github.com/golang/protobuf/proto"
 )
 

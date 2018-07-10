@@ -6,9 +6,9 @@ import (
 	"os"
 	"os/user"
 	"io/ioutil"
-	"sawtooth_sdk/logging"
-	"sawtooth_sdk/processor"
-	ons "ons/ons_handler"
+	"github.com/daludaluking/ons-sawtooth-sdk/logging"
+	"github.com/daludaluking/ons-sawtooth-sdk/processor"
+	ons "github.com/daludaluking/ons-sawtooth/src/ons/ons_handler"
 	flags "github.com/jessevdk/go-flags"
 )
 

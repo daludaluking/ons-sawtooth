@@ -3,10 +3,10 @@ package ons_manager
 import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
-	"protobuf/ons_pb2"
-	"sawtooth_sdk/processor"
-	"sawtooth_sdk/logging"
-	"ons/ons_state"
+	"github.com/daludaluking/ons-sawtooth-sdk/ons_pb2"
+	"github.com/daludaluking/ons-sawtooth-sdk/processor"
+	"github.com/daludaluking/ons-sawtooth-sdk/logging"
+	"github.com/daludaluking/ons-sawtooth/src/ons/ons_state"
 )
 
 type Permission int32
