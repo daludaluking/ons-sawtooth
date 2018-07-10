@@ -46,6 +46,23 @@ $ go get -u github.com/daludaluking/ons-sawtooth-sdk
 $ go get -u github.com/daludaluking/ons-sawtooth
 ```
 
+## ONS-Sawtooth Build 하기
+ons-sawtooth source 경로로 이동한 후에 go build 명령어로 빌드한다.
+```
+$ cd $HOME/go/src/github.com/daludaluking/ons-sawtooth/src/ons
+$ go build -o ./bin/ons
+```
+golang은 build를 하지 않고 바로 실행할 수 있다.
+```
+$ cd $HOME/go/src/github.com/daludaluking/ons-sawtooth/src/ons
+$ go run main.go
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+---------------------------------------
 ### 아래의 내용은 개인적인 메모입니다. (차후 삭제 예정)
 * * *
 *Transaction에서 사용하는 message에 map을 사용하면 block 생성시에 문제가 발생한다.
