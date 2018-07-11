@@ -47,7 +47,7 @@ $ go get -u github.com/daludaluking/ons-sawtooth
 ```
 
 ## ONS-Sawtooth Build 하기
-ons-sawtooth source 경로로 이동한 후에 go build 명령어로 빌드합니다.
+ONS-Sawtooth source 경로로 이동한 후에 go build 명령어로 빌드합니다.
 ```
 $ cd $HOME/go/src/github.com/daludaluking/ons-sawtooth/src/ons
 $ go build -o ./bin/ons
@@ -59,8 +59,8 @@ $ go run main.go
 ```
 
 ## ONS-Sawtooth 실행하기
-ons-sawtooth는 Hyperledger Sawtooth blockchain의 transaction process입니다.
-Hyperledger Sawtooth blockchain의 validator가 실행되고 있을 때 ons-sawtooth transaction process를 연결할 수 있습니다.
+ONS-Sawtooth는 Hyperledger Sawtooth blockchain의 transaction process입니다.
+Hyperledger Sawtooth blockchain의 validator가 실행되고 있을 때 ONS-sawtooth transaction process를 연결할 수 있습니다.
 
 ### Validator 실행하기
 Validator를 실행하는 자세한 방법은 [](https://sawtooth.hyperledger.org/docs/core/nightly/master/app_developers_guide/ubuntu.html#step-4-generate-the-root-key-for-the-validator)를 참고하시기 바랍니다.
@@ -89,7 +89,7 @@ REST API server는 validator에게 transaction(sawtooth에서는 batches라고 �
 ```
 $ sudo -u sawtooth sawtooth-rest-api -vv
 ```
-Validator를 실행할 때 --bind component option을 사용했다면 REST API server도 아래와 같은 명령어로 실행해야 합니다.
+만약, Validator를 실행할 때 --bind component option을 사용했다면 아래 명령어로 실행해야 합니다.
 ```
 $ sudo -u sawtooth sawtooth-rest-api -vv --connect tcp://[ip address]:[port number]
 ```
@@ -108,6 +108,15 @@ $ sudo -u sawtooth settings-tp -vv
 Validator를 실행할 때 --bind component option을 사용했다면 Settings transaction processor도 아래와 같은 명령어로 실행해야 합니다.
 ```
 $ sudo -u sawtooth settings-tp -vv --connect tcp://[ip address]:[port number]
+```
+### ONS-Sawtooth 실행하기
+ONS-Sawtooth를 빌드한 binary로 아래 명령어로 실행합니다.
+```
+$ ons -vv
+```
+만약, Validator를 실행할 때 --bind component option을 사용했다면 아래 명령어로 실행해야 합니다.
+```
+$ ons -vv --connect tcp://[ip address]:[port number]
 ```
 
 ## License
