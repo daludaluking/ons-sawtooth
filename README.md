@@ -31,12 +31,12 @@ ubuntu 16.04에서 실행하는 경우에는 [Using Sawtooth on Ubuntu 16.04](ht
 docker나 AWS에서 실행하기를 원하는 경우에는 [Installing and Running Sawtooth](https://sawtooth.hyperledger.org/docs/core/releases/latest/app_developers_guide/installing_sawtooth.html)를 참조하시면 됩니다.
 
 ## ONS-Sawtooth source 다운받기
-zmq4 package를 download하기전에 먼저 pkg-config와 libzmq를 설치한다.
+zmq4 package를 download하기전에 먼저 pkg-config와 libzmq를 설치합니다.
 ```
 $ sudo apt-get install pkg-config
 $ sudo apt-get install libzmq5-dev
 ```
-zmq, protobuf, ons-sawtooth-sdk, ons-sawtooth source를 download 받는다. 
+zmq, protobuf, ons-sawtooth-sdk, ons-sawtooth source를 download 받습니다. 
 ```
 $ go get -u github.com/jessevdk/go-flags
 $ go get -u github.com/pebbe/zmq4
@@ -47,15 +47,67 @@ $ go get -u github.com/daludaluking/ons-sawtooth
 ```
 
 ## ONS-Sawtooth Build 하기
-ons-sawtooth source 경로로 이동한 후에 go build 명령어로 빌드한다.
+ons-sawtooth source 경로로 이동한 후에 go build 명령어로 빌드합니다.
 ```
 $ cd $HOME/go/src/github.com/daludaluking/ons-sawtooth/src/ons
 $ go build -o ./bin/ons
 ```
-golang은 build를 하지 않고 바로 실행할 수 있다.
+golang은 build를 하지 않고 바로 실행할 수 있습니다.
 ```
 $ cd $HOME/go/src/github.com/daludaluking/ons-sawtooth/src/ons
 $ go run main.go
+```
+
+## ONS-Sawtooth 실행하기
+ons-sawtooth는 Hyperledger Sawtooth blockchain의 transaction process입니다.
+Hyperledger Sawtooth blockchain의 validator가 실행되고 있을 때 ons-sawtooth transaction process를 연결할 수 있습니다.
+
+### Validator 실행하기
+Validator를 실행하는 자세한 방법은 [](https://sawtooth.hyperledger.org/docs/core/nightly/master/app_developers_guide/ubuntu.html#step-4-generate-the-root-key-for-the-validator)를 참고하시기 바랍니다.
+#### 1. Genesis block 만들기
+```
+$ sawset genesis
+$ sudo -u sawtooth sawadm genesis config-genesis.batch
+```
+#### 2. Validator를 위한 root key 생성하기
+```
+$ sudo sawadm keygen
+```
+#### 3. Validator 실행하기
+```
+$ sudo -u sawtooth sawtooth-validator -vv
+```
+위와 같이 실행하면 tcp://localhost:4004로 component를 binding하게 됩니다.
+이것은 REST API server와 transaction process가 component이며, tcp://localhost:4004로 component의 연결을 기다린다는 의미입니다.
+외부에서의 연결을 지원하기 위해서는 아래와 같이 명령어로 실행하면 됩니다.
+```
+$ sudo -u sawtooth sawtooth-validator -vv --bind component:tcp://[ip address]:[port number]
+```
+#### 4. REST API server 실행 및 validator와 연결하기
+REST API server는 validator에게 transaction(sawtooth에서는 batches라고 함)을 전달하고
+분산 ledger의 state를 query하는 기능을 제공합니다.
+```
+$ sudo -u sawtooth sawtooth-rest-api -vv
+```
+Validator를 실행할 때 --bind component option을 사용했다면 REST API server도 아래와 같은 명령어로 실행해야 합니다.
+```
+$ sudo -u sawtooth sawtooth-rest-api -vv --connect tcp://[ip address]:[port number]
+```
+REST API server를 외부에서 접속하도록 하기 위해서는 아래와 명령어로 실행해야 합니다.
+```
+$ sudo -u sawtooth sawtooth-rest-api -vv --bind [ip address]:[port number]
+```
+bind option으로 전달된 [[ip address]]:[[port_number]] 주소로 REST API를 호출할 수 있게 됩니다.
+#### 5. Settings transaction processor 실행하기
+Validator는 최초 실행이 되면 Settings transaction processor의 연결을 기다립니다.
+Settings transaction processor가 연결되지 않으면 어떤 transaction도 수행되지 않기 때문에
+반드시 Settings transaction processor를 실행해야 합니다.
+```
+$ sudo -u sawtooth settings-tp -vv
+```
+Validator를 실행할 때 --bind component option을 사용했다면 Settings transaction processor도 아래와 같은 명령어로 실행해야 합니다.
+```
+$ sudo -u sawtooth settings-tp -vv --connect tcp://[ip address]:[port number]
 ```
 
 ## License
